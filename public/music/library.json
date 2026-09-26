@@ -1,0 +1,143 @@
+{
+  "pieces": [
+    {
+      "id": "beethoven-5-i",
+      "title": "Symphony No. 5 in C minor",
+      "movement": "I. Allegro con brio",
+      "composer": "Ludwig van Beethoven",
+      "year": 1808,
+      "file": "beethoven-symphony-5-i.mid",
+      "ensemble": "full",
+      "blurb": "Four notes that became the most famous opening in music, hammered out by the whole orchestra and passed from section to section.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project (piece 941)",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=941",
+      "trackOverrides": {
+        "4": "horn",
+        "5": "trumpet"
+      },
+      "dynamics": "heuristic"
+    },
+    {
+      "id": "dvorak-9-iv",
+      "title": "Symphony No. 9 \"From the New World\"",
+      "movement": "IV. Allegro con fuoco",
+      "composer": "Antonín Dvořák",
+      "year": 1893,
+      "file": "dvorak-symphony-9-iv.mid",
+      "ensemble": "full",
+      "blurb": "Horns and trumpets blaze out the march theme over churning strings. Watch for the single cymbal crash.",
+      "license": "CC BY-SA 3.0",
+      "attribution": "MIDI typeset by Keith OHara, The Mutopia Project (piece 1793), CC BY-SA 3.0",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1793",
+      "players": {
+        "horn": 4
+      }
+    },
+    {
+      "id": "mozart-k525-i",
+      "title": "Eine kleine Nachtmusik, K. 525",
+      "movement": "I. Allegro",
+      "composer": "Wolfgang Amadeus Mozart",
+      "year": 1787,
+      "file": "mozart-eine-kleine-nachtmusik-i.mid",
+      "ensemble": "chamber",
+      "blurb": "A serenade for strings alone: violins trade the tune while violas, cellos and basses drive the harmony.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project (piece 2230)",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2230",
+      "alsoDrives": {
+        "cello": [
+          "bass"
+        ]
+      }
+    },
+    {
+      "id": "beethoven-egmont",
+      "title": "Egmont Overture, Op. 84",
+      "movement": "Sostenuto ma non troppo – Allegro",
+      "composer": "Ludwig van Beethoven",
+      "year": 1810,
+      "file": "beethoven-egmont-overture.mid",
+      "ensemble": "full",
+      "blurb": "Heavy sarabande chords open onto a heroic Allegro that ends in a triumphant brass-led coda.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project (piece 547)",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=547",
+      "trackOverrides": {
+        "5": "horn",
+        "6": "horn",
+        "7": "trumpet"
+      },
+      "players": {
+        "horn": 4
+      }
+    },
+    {
+      "id": "beethoven-7-ii",
+      "title": "Symphony No. 7 in A major",
+      "movement": "II. Allegretto",
+      "composer": "Ludwig van Beethoven",
+      "year": 1813,
+      "file": "beethoven-symphony-7-ii.mid",
+      "ensemble": "full",
+      "blurb": "A hypnotic walking rhythm that starts in the low strings and builds, layer by layer, to the full orchestra.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project (piece 595)",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=595",
+      "trackOverrides": {
+        "4": "horn",
+        "5": "trumpet"
+      }
+    },
+    {
+      "id": "beethoven-coriolan",
+      "title": "Coriolan Overture, Op. 62",
+      "movement": "Allegro con brio",
+      "composer": "Ludwig van Beethoven",
+      "year": 1807,
+      "file": "beethoven-coriolan-overture.mid",
+      "ensemble": "full",
+      "blurb": "Stormy unison blows and silences portray a proud, doomed hero.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/make-table.cgi?Composer=BeethovenLv"
+    },
+    {
+      "id": "rossini-eduardo",
+      "title": "Eduardo e Cristina: Overture",
+      "movement": "Andante – Allegro",
+      "composer": "Gioachino Rossini",
+      "year": 1819,
+      "file": "rossini-eduardo-e-cristina-overture.mid",
+      "ensemble": "full",
+      "blurb": "Rossini at full sparkle, with piccolo flourishes, a bass drum and the famous crescendo that builds to a riot.",
+      "license": "Public Domain",
+      "attribution": "MIDI from The Mutopia Project (piece 1634)",
+      "sourceUrl": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1634",
+      "alsoDrives": {
+        "cello": [
+          "bass"
+        ],
+        "violin1": [
+          "violin2"
+        ]
+      },
+      "drumMap": {
+        "48": "bassdrum"
+      }
+    },
+    {
+      "id": "diagnostics",
+      "title": "Sync diagnostics",
+      "movement": "Timpani clicks + a scale through every section",
+      "composer": "Test signal",
+      "file": "diagnostics.mid",
+      "ensemble": "full",
+      "blurb": "A timpani stroke on every beat and a rising scale handed from section to section. Check that sticks, bows and breaths land exactly with the sound.",
+      "license": "CC0",
+      "attribution": "Generated by tools/music/make-sync-test-midi.mjs",
+      "hidden": true
+    }
+  ]
+}

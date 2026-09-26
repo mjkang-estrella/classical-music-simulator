@@ -1,0 +1,2362 @@
+[
+  {
+    "id": "rocketbox_business_male_01",
+    "file": "rocketbox_business_male_01.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_01",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.806,
+    "bytes": 856956,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 7435,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 3892,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 1864,
+        "bones": 80,
+        "weightedBones": 73
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ]
+      }
+    },
+    "notes": "Black suit, white shirt; red tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_02",
+    "file": "rocketbox_business_male_02.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_02",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.823,
+    "bytes": 848152,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 7448,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 3826,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 1782,
+        "bones": 80,
+        "weightedBones": 73
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ]
+      }
+    },
+    "notes": "Navy suit and tie darkened/desaturated to near-black (tie pattern flattened); white shirt kept. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_03",
+    "file": "rocketbox_business_male_03.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_03",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.819,
+    "bytes": 927912,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 7810,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 4054,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 1885,
+        "bones": 80,
+        "weightedBones": 74
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ]
+      }
+    },
+    "notes": "Charcoal suit darkened toward black; teal tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_04",
+    "file": "rocketbox_business_male_04.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_04",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.801,
+    "bytes": 780364,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 7326,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 3662,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 1610,
+        "bones": 80,
+        "weightedBones": 72
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ]
+      }
+    },
+    "notes": "Grey waistcoat, shirt and trousers darkened to black (all-black, no jacket). Bald, no hair cards. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_female_01",
+    "file": "rocketbox_business_female_01.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Female_01",
+    "license": "MIT",
+    "gender": "female",
+    "height_m": 1.74,
+    "bytes": 1067568,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 8966,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 4738,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 2310,
+        "bones": 80,
+        "weightedBones": 72
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 42.3,
+      "forearmBelowHorizontal_deg": 37.7,
+      "elbowFlex_deg": 23.4,
+      "leftPalmNormal": [
+        -0.802,
+        -0.597,
+        0.029
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.924,
+          0.063
+        ],
+        "Bip01_Spine": [
+          0,
+          1.044,
+          0.061
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.168,
+          0.058
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.289,
+          0.045
+        ],
+        "Bip01_Neck": [
+          0,
+          1.454,
+          -0.009
+        ],
+        "Bip01_Head": [
+          0,
+          1.523,
+          0.006
+        ],
+        "Bip01_L_Clavicle": [
+          0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_L_UpperArm": [
+          0.172,
+          1.381,
+          0.002
+        ],
+        "Bip01_L_Forearm": [
+          0.359,
+          1.21,
+          0
+        ],
+        "Bip01_L_Hand": [
+          0.524,
+          1.064,
+          0.093
+        ],
+        "Bip01_R_Clavicle": [
+          -0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_R_UpperArm": [
+          -0.172,
+          1.381,
+          0.002
+        ],
+        "Bip01_R_Forearm": [
+          -0.359,
+          1.21,
+          0
+        ],
+        "Bip01_R_Hand": [
+          -0.524,
+          1.064,
+          0.093
+        ],
+        "Bip01_L_Finger1": [
+          0.567,
+          0.998,
+          0.147
+        ],
+        "Bip01_L_Finger11": [
+          0.586,
+          0.967,
+          0.16
+        ],
+        "Bip01_L_Finger12": [
+          0.593,
+          0.947,
+          0.166
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.924,
+          0.063
+        ],
+        "Bip01_L_Calf": [
+          0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.118,
+          0.1,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.152,
+          0.003,
+          0.131
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.924,
+          0.063
+        ],
+        "Bip01_R_Calf": [
+          -0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.118,
+          0.1,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.152,
+          0.003,
+          0.131
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.551,
+          0.023
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.033,
+          1.605,
+          0.102
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.033,
+          1.605,
+          0.102
+        ],
+        "Bip01_LEye": [
+          0.03,
+          1.613,
+          0.092
+        ],
+        "Bip01_REye": [
+          -0.03,
+          1.613,
+          0.092
+        ],
+        "Bip01_MNose": [
+          0,
+          1.585,
+          0.131
+        ]
+      }
+    },
+    "notes": "Black trouser suit, white shirt. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_female_02",
+    "file": "rocketbox_business_female_02.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Female_02",
+    "license": "MIT",
+    "gender": "female",
+    "height_m": 1.729,
+    "bytes": 1207240,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 8640,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 4607,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 2337,
+        "bones": 80,
+        "weightedBones": 72
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 42.3,
+      "forearmBelowHorizontal_deg": 37.7,
+      "elbowFlex_deg": 23.4,
+      "leftPalmNormal": [
+        -0.802,
+        -0.597,
+        0.029
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.923,
+          0.063
+        ],
+        "Bip01_Spine": [
+          0,
+          1.043,
+          0.061
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.167,
+          0.058
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.289,
+          0.045
+        ],
+        "Bip01_Neck": [
+          0,
+          1.454,
+          -0.009
+        ],
+        "Bip01_Head": [
+          0,
+          1.522,
+          0.006
+        ],
+        "Bip01_L_Clavicle": [
+          0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_L_UpperArm": [
+          0.172,
+          1.38,
+          0.002
+        ],
+        "Bip01_L_Forearm": [
+          0.359,
+          1.21,
+          0
+        ],
+        "Bip01_L_Hand": [
+          0.524,
+          1.063,
+          0.093
+        ],
+        "Bip01_R_Clavicle": [
+          -0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_R_UpperArm": [
+          -0.172,
+          1.38,
+          0.002
+        ],
+        "Bip01_R_Forearm": [
+          -0.359,
+          1.21,
+          0
+        ],
+        "Bip01_R_Hand": [
+          -0.524,
+          1.063,
+          0.093
+        ],
+        "Bip01_L_Finger1": [
+          0.567,
+          0.997,
+          0.147
+        ],
+        "Bip01_L_Finger11": [
+          0.586,
+          0.967,
+          0.16
+        ],
+        "Bip01_L_Finger12": [
+          0.593,
+          0.947,
+          0.166
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.923,
+          0.063
+        ],
+        "Bip01_L_Calf": [
+          0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.118,
+          0.1,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.152,
+          0.002,
+          0.131
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.923,
+          0.063
+        ],
+        "Bip01_R_Calf": [
+          -0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.118,
+          0.1,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.152,
+          0.002,
+          0.131
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.551,
+          0.023
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.033,
+          1.604,
+          0.102
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.033,
+          1.604,
+          0.102
+        ],
+        "Bip01_LEye": [
+          0.03,
+          1.612,
+          0.092
+        ],
+        "Bip01_REye": [
+          -0.03,
+          1.612,
+          0.092
+        ],
+        "Bip01_MNose": [
+          0,
+          1.584,
+          0.131
+        ]
+      }
+    },
+    "notes": "Burgundy jacket, brown trousers and grey turtleneck recolored to black. Blonde, glasses (alpha-clipped). LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_female_03",
+    "file": "rocketbox_business_female_03.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Female_03",
+    "license": "MIT",
+    "gender": "female",
+    "height_m": 1.743,
+    "bytes": 981236,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 8438,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 4415,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 2083,
+        "bones": 80,
+        "weightedBones": 74
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 42.3,
+      "forearmBelowHorizontal_deg": 37.7,
+      "elbowFlex_deg": 23.4,
+      "leftPalmNormal": [
+        -0.802,
+        -0.597,
+        0.029
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.924,
+          0.063
+        ],
+        "Bip01_Spine": [
+          0,
+          1.044,
+          0.061
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.168,
+          0.058
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.289,
+          0.045
+        ],
+        "Bip01_Neck": [
+          0,
+          1.454,
+          -0.009
+        ],
+        "Bip01_Head": [
+          0,
+          1.523,
+          0.006
+        ],
+        "Bip01_L_Clavicle": [
+          0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_L_UpperArm": [
+          0.172,
+          1.381,
+          0.002
+        ],
+        "Bip01_L_Forearm": [
+          0.359,
+          1.21,
+          0
+        ],
+        "Bip01_L_Hand": [
+          0.524,
+          1.064,
+          0.093
+        ],
+        "Bip01_R_Clavicle": [
+          -0.077,
+          1.403,
+          0.006
+        ],
+        "Bip01_R_UpperArm": [
+          -0.172,
+          1.381,
+          0.002
+        ],
+        "Bip01_R_Forearm": [
+          -0.359,
+          1.21,
+          0
+        ],
+        "Bip01_R_Hand": [
+          -0.524,
+          1.064,
+          0.093
+        ],
+        "Bip01_L_Finger1": [
+          0.567,
+          0.998,
+          0.147
+        ],
+        "Bip01_L_Finger11": [
+          0.586,
+          0.967,
+          0.16
+        ],
+        "Bip01_L_Finger12": [
+          0.593,
+          0.947,
+          0.166
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.924,
+          0.063
+        ],
+        "Bip01_L_Calf": [
+          0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.118,
+          0.1,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.152,
+          0.003,
+          0.131
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.924,
+          0.063
+        ],
+        "Bip01_R_Calf": [
+          -0.104,
+          0.499,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.118,
+          0.1,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.152,
+          0.003,
+          0.131
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.551,
+          0.023
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.033,
+          1.605,
+          0.102
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.032,
+          1.619,
+          0.101
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.033,
+          1.605,
+          0.102
+        ],
+        "Bip01_LEye": [
+          0.03,
+          1.613,
+          0.092
+        ],
+        "Bip01_REye": [
+          -0.03,
+          1.613,
+          0.092
+        ],
+        "Bip01_MNose": [
+          0,
+          1.585,
+          0.131
+        ]
+      }
+    },
+    "notes": "Brown jacket, blouse and skirt recolored to black (hands, legs and neckline skin excluded by region). LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_female_04",
+    "file": "rocketbox_business_female_04.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Female_04",
+    "license": "MIT",
+    "gender": "female",
+    "height_m": 1.733,
+    "bytes": 911380,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 8270,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD1",
+        "triangles": 4282,
+        "bones": 80,
+        "weightedBones": 80
+      },
+      {
+        "name": "LOD2",
+        "triangles": 2051,
+        "bones": 80,
+        "weightedBones": 73
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 42.3,
+      "forearmBelowHorizontal_deg": 37.7,
+      "elbowFlex_deg": 23.4,
+      "leftPalmNormal": [
+        -0.802,
+        -0.597,
+        0.029
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.927,
+          0.063
+        ],
+        "Bip01_Spine": [
+          0,
+          1.047,
+          0.061
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.171,
+          0.058
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.292,
+          0.045
+        ],
+        "Bip01_Neck": [
+          0,
+          1.457,
+          -0.009
+        ],
+        "Bip01_Head": [
+          0,
+          1.526,
+          0.006
+        ],
+        "Bip01_L_Clavicle": [
+          0.077,
+          1.406,
+          0.006
+        ],
+        "Bip01_L_UpperArm": [
+          0.172,
+          1.384,
+          0.002
+        ],
+        "Bip01_L_Forearm": [
+          0.359,
+          1.213,
+          0
+        ],
+        "Bip01_L_Hand": [
+          0.524,
+          1.067,
+          0.093
+        ],
+        "Bip01_R_Clavicle": [
+          -0.077,
+          1.406,
+          0.006
+        ],
+        "Bip01_R_UpperArm": [
+          -0.172,
+          1.384,
+          0.002
+        ],
+        "Bip01_R_Forearm": [
+          -0.359,
+          1.213,
+          0
+        ],
+        "Bip01_R_Hand": [
+          -0.524,
+          1.067,
+          0.093
+        ],
+        "Bip01_L_Finger1": [
+          0.567,
+          1.001,
+          0.147
+        ],
+        "Bip01_L_Finger11": [
+          0.586,
+          0.97,
+          0.16
+        ],
+        "Bip01_L_Finger12": [
+          0.593,
+          0.95,
+          0.166
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.927,
+          0.063
+        ],
+        "Bip01_L_Calf": [
+          0.104,
+          0.502,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.118,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.152,
+          0.006,
+          0.131
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.927,
+          0.063
+        ],
+        "Bip01_R_Calf": [
+          -0.104,
+          0.502,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.118,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.152,
+          0.006,
+          0.131
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.554,
+          0.023
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.032,
+          1.622,
+          0.101
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.033,
+          1.608,
+          0.102
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.032,
+          1.622,
+          0.101
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.033,
+          1.608,
+          0.102
+        ],
+        "Bip01_LEye": [
+          0.03,
+          1.616,
+          0.092
+        ],
+        "Bip01_REye": [
+          -0.03,
+          1.616,
+          0.092
+        ],
+        "Bip01_MNose": [
+          0,
+          1.588,
+          0.131
+        ]
+      }
+    },
+    "notes": "Dark pinstripe trouser suit. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  }
+]

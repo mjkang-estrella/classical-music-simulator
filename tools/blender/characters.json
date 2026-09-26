@@ -1,0 +1,464 @@
+{
+  "$comment": "Cast config for tools/blender/build_characters.sh. Rects are normalized texture coords, origin top-left. See recolor_attire.py for the rule format.",
+  "repo": "https://github.com/microsoft/Microsoft-Rocketbox",
+  "sourceRoot": "vendor/rocketbox/Microsoft-Rocketbox",
+  "outputDir": "public/assets/characters",
+  "cacheDir": "vendor/rocketbox/cache",
+  "previewDir": "vendor/previews",
+  "defaults": {
+    "textureSize": 1024,
+    "opacityTextureSize": 512,
+    "imageFormat": "WEBP",
+    "imageQuality": 82,
+    "alphaCutoff": 0.4,
+    "roughness": {
+      "body": 0.72,
+      "head": 0.55,
+      "opacity": 0.88,
+      "glasses": 0.3
+    },
+    "lods": [
+      {
+        "name": "LOD0",
+        "ratio": 1.0
+      },
+      {
+        "name": "LOD1",
+        "ratio": 0.5,
+        "method": "meshopt",
+        "maxError": 0.02
+      },
+      {
+        "name": "LOD2",
+        "ratio": 0.22,
+        "method": "meshopt",
+        "maxError": 0.06
+      }
+    ],
+    "skinGuard": {
+      "hue": [
+        0.02,
+        0.11
+      ],
+      "sat": [
+        0.22,
+        0.85
+      ],
+      "val": [
+        0.38,
+        1.0
+      ]
+    },
+    "recolorFeather": {
+      "hue": 0.02,
+      "sat": 0.04,
+      "val": 0.04
+    },
+    "doubleSidedAlpha": false
+  },
+  "characters": [
+    {
+      "id": "rocketbox_business_male_01",
+      "name": "Business_Male_01",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_01",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Black suit, white shirt; red tie recolored to black.",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "tie",
+            "hue": [
+              0.95,
+              0.03
+            ],
+            "sat": [
+              0.45,
+              1.0
+            ],
+            "val": [
+              0.08,
+              1.0
+            ],
+            "satScale": 0.08,
+            "valScale": 0.16
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_male_02",
+      "name": "Business_Male_02",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_02",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Navy suit and tie darkened/desaturated to near-black (tie pattern flattened); white shirt kept.",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "navy",
+            "hue": [
+              0.52,
+              0.78
+            ],
+            "sat": [
+              0.08,
+              1.0
+            ],
+            "val": [
+              0.0,
+              0.45
+            ],
+            "satScale": 0.2,
+            "valScale": 0.5
+          },
+          {
+            "name": "tie_dots",
+            "sat": [
+              0.0,
+              1.0
+            ],
+            "val": [
+              0.0,
+              1.0
+            ],
+            "satScale": 0.1,
+            "valScale": 0.35,
+            "valMax": 0.1,
+            "include": [
+              [
+                0.36,
+                0.83,
+                0.62,
+                0.98
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_male_03",
+      "name": "Business_Male_03",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_03",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Charcoal suit darkened toward black; teal tie recolored to black.",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "tie",
+            "hue": [
+              0.36,
+              0.56
+            ],
+            "sat": [
+              0.06,
+              1.0
+            ],
+            "val": [
+              0.0,
+              1.0
+            ],
+            "satScale": 0.05,
+            "valScale": 0.2
+          },
+          {
+            "name": "suit",
+            "sat": [
+              0.0,
+              0.2
+            ],
+            "val": [
+              0.0,
+              0.32
+            ],
+            "satScale": 0.5,
+            "valScale": 0.7
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_male_04",
+      "name": "Business_Male_04",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_04",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Grey waistcoat, shirt and trousers darkened to black (all-black, no jacket). Bald, no hair cards.",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "greys",
+            "sat": [
+              0.0,
+              0.28
+            ],
+            "val": [
+              0.0,
+              0.55
+            ],
+            "satScale": 0.35,
+            "valScale": 0.34
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_female_01",
+      "name": "Business_Female_01",
+      "sourceDir": "Assets/Avatars/Professions/Business_Female_01",
+      "gender": "female",
+      "enabled": true,
+      "notes": "Black trouser suit, white shirt. No recolor needed.",
+      "recolor": {}
+    },
+    {
+      "id": "rocketbox_business_female_02",
+      "name": "Business_Female_02",
+      "sourceDir": "Assets/Avatars/Professions/Business_Female_02",
+      "gender": "female",
+      "enabled": true,
+      "notes": "Burgundy jacket, brown trousers and grey turtleneck recolored to black. Blonde, glasses (alpha-clipped).",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "jacket_trousers",
+            "sat": [
+              0.0,
+              1.0
+            ],
+            "val": [
+              0.0,
+              0.95
+            ],
+            "satScale": 0.12,
+            "valScale": 0.45,
+            "valMax": 0.13,
+            "ignoreSkinGuard": true,
+            "exclude": [
+              [
+                0.0,
+                0.0,
+                0.3,
+                0.27
+              ],
+              [
+                0.7,
+                0.0,
+                1.0,
+                0.27
+              ],
+              [
+                0.455,
+                0.46,
+                0.545,
+                0.62
+              ],
+              [
+                0.36,
+                0.77,
+                0.64,
+                0.88
+              ]
+            ]
+          },
+          {
+            "name": "jacket_edges_near_top",
+            "hue": [
+              0.92,
+              0.07
+            ],
+            "sat": [
+              0.28,
+              1.0
+            ],
+            "val": [
+              0.0,
+              0.9
+            ],
+            "satScale": 0.12,
+            "valScale": 0.45,
+            "valMax": 0.13,
+            "ignoreSkinGuard": true,
+            "include": [
+              [
+                0.455,
+                0.46,
+                0.545,
+                0.62
+              ],
+              [
+                0.36,
+                0.77,
+                0.64,
+                0.88
+              ]
+            ]
+          },
+          {
+            "name": "turtleneck",
+            "sat": [
+              0.0,
+              0.25
+            ],
+            "val": [
+              0.0,
+              1.0
+            ],
+            "satScale": 0.3,
+            "valScale": 0.3,
+            "valMax": 0.14,
+            "ignoreSkinGuard": true,
+            "include": [
+              [
+                0.455,
+                0.46,
+                0.545,
+                0.62
+              ],
+              [
+                0.36,
+                0.77,
+                0.64,
+                0.88
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_female_03",
+      "name": "Business_Female_03",
+      "sourceDir": "Assets/Avatars/Professions/Business_Female_03",
+      "gender": "female",
+      "enabled": true,
+      "notes": "Brown jacket, blouse and skirt recolored to black (hands, legs and neckline skin excluded by region).",
+      "skinGuard": {
+        "hue": [
+          0.02,
+          0.11
+        ],
+        "sat": [
+          0.37,
+          0.85
+        ],
+        "val": [
+          0.4,
+          1.0
+        ]
+      },
+      "recolor": {
+        "body_color": [
+          {
+            "name": "jacket_skirt",
+            "hue": [
+              0.02,
+              0.12
+            ],
+            "sat": [
+              0.08,
+              0.36
+            ],
+            "val": [
+              0.06,
+              0.56
+            ],
+            "satScale": 0.12,
+            "valScale": 0.3,
+            "exclude": [
+              [
+                0.0,
+                0.0,
+                0.3,
+                0.26
+              ],
+              [
+                0.7,
+                0.0,
+                1.0,
+                0.26
+              ],
+              [
+                0.0,
+                0.72,
+                0.3,
+                1.0
+              ],
+              [
+                0.7,
+                0.72,
+                1.0,
+                1.0
+              ],
+              [
+                0.42,
+                0.4,
+                0.58,
+                0.66
+              ]
+            ]
+          },
+          {
+            "name": "neckline_blouse_lining",
+            "sat": [
+              0.0,
+              1.0
+            ],
+            "val": [
+              0.0,
+              0.5
+            ],
+            "satScale": 0.12,
+            "valScale": 0.3,
+            "ignoreSkinGuard": true,
+            "include": [
+              [
+                0.42,
+                0.4,
+                0.58,
+                0.66
+              ]
+            ]
+          },
+          {
+            "name": "blouse_collar",
+            "hue": [
+              0.0,
+              0.14
+            ],
+            "sat": [
+              0.15,
+              1.0
+            ],
+            "val": [
+              0.0,
+              0.75
+            ],
+            "satScale": 0.12,
+            "valScale": 0.3,
+            "ignoreSkinGuard": true,
+            "include": [
+              [
+                0.34,
+                0.0,
+                0.66,
+                0.08
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_female_04",
+      "name": "Business_Female_04",
+      "sourceDir": "Assets/Avatars/Professions/Business_Female_04",
+      "gender": "female",
+      "enabled": true,
+      "notes": "Dark pinstripe trouser suit. No recolor needed.",
+      "recolor": {}
+    }
+  ]
+}

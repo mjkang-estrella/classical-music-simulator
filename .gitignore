@@ -1,0 +1,9 @@
+.DS_Store
+*.local
+dist
+node_modules
+playwright-report/
+test-results/
+tools/blender/__pycache__
+tools/blender/instruments/__pycache__
+vendor/

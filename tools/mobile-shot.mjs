@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+const browser = await chromium.launch({ headless: true, channel: 'chromium', args: ['--use-angle=metal', '--ignore-gpu-blocklist'] });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+await page.goto('http://localhost:5173/');
+await page.waitForFunction(() => window.__orchestra && window.__orchestra.status() !== 'loading');
+await page.waitForTimeout(2500);
+await page.screenshot({ path: process.argv[2] });
+const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+console.log('horizontal overflow:', overflow);
+await browser.close();
