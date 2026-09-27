@@ -147,6 +147,8 @@ export class Rig {
   private readonly hipsParentInv = new Matrix4();
   private readonly footRootQ: Record<Side, Quaternion> = { Left: new Quaternion(), Right: new Quaternion() };
   readonly bindHips = new Vector3();
+  /** bind-pose ankle positions in root space (for planting feet while standing) */
+  readonly bindAnkles: Record<Side, Vector3> = { Left: new Vector3(), Right: new Vector3() };
   /** optional facial bones (Rocketbox Biped face rig) */
   readonly face: FaceBones = {};
   private readonly eyeBindQ = new Map<Bone, Quaternion>();
@@ -199,6 +201,8 @@ export class Rig {
       headTop,
     };
     this.bindHips.copy(p(b.Hips));
+    this.bindAnkles.Left.copy(p(b.LeftFoot));
+    this.bindAnkles.Right.copy(p(b.RightFoot));
     this.hipsParentInv.copy(b.Hips!.parent!.matrixWorld).invert();
 
     const limb = (upper: Bone, lower: Bone, end: Bone, kind: 'arm' | 'leg'): Limb => {

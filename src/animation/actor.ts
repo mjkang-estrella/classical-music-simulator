@@ -348,7 +348,7 @@ export class Actor {
   }
 
   /** Common seated/standing posture: hips, spine lean & sway, head. Ends with rig.update(). */
-  private posture(f: FrameState, o: { lean?: number; twist?: number; roll?: number; headPitch?: number; headYaw?: number; headRoll?: number; kneesApart?: number; feetForward?: number }) {
+  private posture(f: FrameState, o: { lean?: number; twist?: number; roll?: number; headPitch?: number; headYaw?: number; headRoll?: number; kneesApart?: number; feetForward?: number; hipShift?: number; kneeDip?: number }) {
     const rig = this.rig;
     const b = rig.bindHips;
     const breath = Math.sin(f.wall * (1.6 + this.seed * 0.5) + this.seed * 20) * 0.5 + 0.5;
@@ -358,7 +358,10 @@ export class Actor {
     if (!this.standing) {
       rig.setHips(_b.set(b.x, this.seatTop + 0.1 + (b.y - rig.measure.hipHeight), -0.05));
     } else {
-      rig.setHips(_b.set(b.x, b.y - 0.012 - 0.012 * this.s.loud, b.z));
+      // standing: soft knees, weight shifting from foot to foot, a dip into each downbeat
+      const shift = noise1(f.wall * 0.18 + this.seed * 9) * 0.035 + (o.hipShift ?? 0);
+      const dip = 0.018 + 0.012 * this.s.loud + this.s.nod * 0.35 + (o.kneeDip ?? 0);
+      rig.setHips(_b.set(b.x + shift, b.y - dip, b.z + 0.01));
     }
     // lean into crescendos, sit back as the phrase relaxes; inhale lifts the chest
     const lean = (o.lean ?? 0.06) + this.s.trend * 0.18 + rock - this.s.inhale * 0.04;
@@ -376,6 +379,7 @@ export class Actor {
     rig.rotate('Head', hp * 0.6 + sway * 0.3, hy * 0.6, (o.headRoll ?? 0) * 0.6);
     rig.update();
     if (!this.standing) this.seatLegs(o.kneesApart ?? 1, o.feetForward ?? 0);
+    else this.plantFeet();
     this.computeTorso();
   }
 
@@ -391,6 +395,20 @@ export class Actor {
       const z = local.z + Math.min(reach, rig.measure.thigh * 0.98 + 0.06 + forward) + (side === 'Left' ? 0.02 : -0.02) * (this.seed - 0.5);
       const target = this.rp(x, rig.measure.ankleHeight, z, _c);
       rig.solveLimb(`${side}Leg`, target, this.rd(0.1 * (side === 'Left' ? 1 : -1), 0.1, 1, _pole));
+      rig.plantFoot(side);
+      rig.bones[`${side}Foot`]!.updateMatrixWorld(true);
+    }
+  }
+
+  /** Keeps both feet planted where they stand while the hips move (standing performers). */
+  private plantFeet() {
+    const rig = this.rig;
+    for (const side of ['Left', 'Right'] as const) {
+      const a = rig.bindAnkles[side];
+      const sign = side === 'Left' ? 1 : -1;
+      // a slightly wider, turned-out stance than the bind pose
+      const target = this.rp(a.x + sign * 0.03, a.y, a.z + 0.01, _c);
+      rig.solveLimb(`${side}Leg`, target, this.rd(sign * 0.15, 0, 1, _pole));
       rig.plantFoot(side);
       rig.bones[`${side}Foot`]!.updateMatrixWorld(true);
     }
@@ -860,7 +878,7 @@ export class Actor {
       if (timp && hand === 1) twist = (1.5 - st.target) * 0.12;
     }
     this.s.lean = this.sm(this.s.lean, twist, 6);
-    this.posture(f, { lean: 0.12 + this.s.loud * 0.08, twist: this.s.lean, headPitch: 0.25, headYaw: this.s.lean * 0.8 });
+    this.posture(f, { lean: 0.12 + this.s.loud * 0.08, twist: this.s.lean, headPitch: 0.25, headYaw: this.s.lean * 0.8, hipShift: this.s.lean * 0.12, kneeDip: this.s.loud * 0.02 });
     const s = this.scale;
     hands.forEach((h, i) => {
       const side: Hand = h === 'L' ? 'Left' : 'Right';
@@ -1002,7 +1020,15 @@ export class Actor {
     const loud = this.s.loud;
     const scan = noise1(f.wall * 0.12 + 3) * 0.35;
     this.s.cue = this.sm(this.s.cue, 0, 1.5);
-    this.posture(f, { lean: 0.05 + loud * 0.1, twist: scan * 0.5 * this.s.arms + this.s.cueYaw * this.s.cue * 0.5, headPitch: 0.08, headYaw: scan + this.s.cueYaw * this.s.cue });
+    const downbeat = f.sinceDownbeat < 0.4 ? Math.exp(-f.sinceDownbeat * 8) * (0.01 + 0.025 * loud) * this.s.arms : 0;
+    this.posture(f, {
+      lean: 0.05 + loud * 0.1,
+      twist: scan * 0.5 * this.s.arms + this.s.cueYaw * this.s.cue * 0.5,
+      headPitch: 0.08,
+      headYaw: scan + this.s.cueYaw * this.s.cue,
+      hipShift: (scan * 0.03 + this.s.cueYaw * this.s.cue * 0.04) * this.s.arms,
+      kneeDip: downbeat,
+    });
     const s = this.scale;
     const T = this.torso;
     // the gesture leads the sound slightly, as real conductors do
