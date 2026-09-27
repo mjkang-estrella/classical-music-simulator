@@ -299,6 +299,14 @@ export function setPoreStrength(v: number) {
   SKIN_UNIFORMS.uPoreStrength.value = v;
 }
 
+/** Flush (0..1): blood rising to the face, e.g. brass players in loud passages. */
+export function setFlush(mat: Material, flush: number) {
+  const u = mat.userData as { skinTint?: Color; baseSkinTint?: Color };
+  if (!u.skinTint || !u.baseSkinTint) return;
+  u.skinTint.copy(u.baseSkinTint).multiply(_flush.setRGB(1 + 0.1 * flush, 1 - 0.05 * flush, 1 - 0.06 * flush));
+}
+const _flush = new Color();
+
 export interface EyeUniforms {
   l: { value: Vector3 };
   r: { value: Vector3 };
@@ -317,6 +325,7 @@ export function personalize(mat: Material, seed: number) {
     const b = 0.94 + r(1) * 0.12;
     const warm = (r(2) - 0.5) * 0.06;
     u.skinTint.setRGB(b * (1 + warm), b, b * (1 - warm));
+    (mat.userData as { baseSkinTint?: Color }).baseSkinTint = u.skinTint.clone();
   }
   if (u.hair && u.hairTint) {
     // a third keep their colour, the rest darken toward brown / near-black or grey

@@ -1,5 +1,6 @@
 import { CapsuleGeometry, Group, Matrix4, Mesh, MeshBasicMaterial, Object3D, Quaternion, Vector3 } from 'three';
 import { createCharacter, type CharacterInstance } from '../assets/characterFactory';
+import { setFlush } from '../assets/characterMaterials';
 import { createInstrument } from '../assets/instrumentFactory';
 import type { BowedSpec, InstrumentModel } from '../assets/instruments/types';
 import { loudnessAt } from '../music/midiLoader';
@@ -49,6 +50,8 @@ interface Smoothed {
   blink: number;
   jaw: number;
   brow: number;
+  flush: number;
+  wasSounding: number;
 }
 
 /** One performer on stage: character + instrument + the logic that animates them from the score. */
@@ -68,7 +71,7 @@ export class Actor {
   readonly jitter: number;
   readonly seed: number;
   readonly torso = new Basis();
-  private readonly s: Smoothed = { raise: 0, lean: 0, loud: 0, trend: 0, bowLift: 0, bowTwist: 0, stringF: 2, handZ: NaN, vib: 0, cue: 0, cueYaw: 0, arms: 0, nod: 0, inhale: 0, pluckL: 0, pluckR: 0, batonFlick: 0, glance: 0, blink: 0, jaw: 0, brow: 0 };
+  private readonly s: Smoothed = { raise: 0, lean: 0, loud: 0, trend: 0, bowLift: 0, bowTwist: 0, stringF: 2, handZ: NaN, vib: 0, cue: 0, cueYaw: 0, arms: 0, nod: 0, inhale: 0, pluckL: 0, pluckR: 0, batonFlick: 0, glance: 0, blink: 0, jaw: 0, brow: 0, flush: 0, wasSounding: 0 };
   /** current (smoothed) finger poses */
   private readonly hands: Record<Hand, HandPose> = { Left: clonePose(POSES.relaxed), Right: clonePose(POSES.relaxed) };
   private readonly scratch: Record<Hand, HandPose> = { Left: clonePose(POSES.relaxed), Right: clonePose(POSES.relaxed) };
@@ -225,6 +228,10 @@ export class Actor {
     const rig = this.rig;
     const wall = f.wall;
     // --- blinking: every 2–6 s, faster when playing hard, one extra on a glance change
+    // people blink as a phrase ends / when they stop to breathe
+    const sounding = this.notes.length > 0 ? 1 : 0;
+    if (this.s.wasSounding && !sounding && wall - this.blinkStart > 0.8) this.nextBlink = Math.min(this.nextBlink, wall + 0.06);
+    this.s.wasSounding = sounding;
     if (wall >= this.nextBlink) {
       this.blinkStart = wall;
       const r = noise1(wall * 3.1 + this.seed * 97) * 0.5 + 0.5;
@@ -273,6 +280,11 @@ export class Actor {
     const family = this.musician ? SECTIONS[this.musician.section].family : 'strings';
     const blowing = (family === 'woodwinds' || family === 'brass') && this.notes.length > 0 && this.s.raise > 0.6;
     // lips stay sealed around a mouthpiece; the flute needs only a small aperture; breaths open the mouth
+    if (this.kind === 'conductor') {
+      // conductors breathe with the orchestra: an audible inhale on the preparatory beat and cues
+      const prep = f.beatIndex >= 0 ? 0 : 1;
+      this.s.inhale = this.sm(this.s.inhale, Math.max(prep * this.s.arms, this.s.cue * 0.7), 6);
+    }
     const breathOpen = this.s.inhale * (family === 'woodwinds' || family === 'brass' ? 0.06 : 0.03);
     const jawTarget = blowing ? (family === 'brass' ? 0.012 : this.kind === 'flute' || this.kind === 'piccolo' ? 0.01 : 0.03) : 0.005 + breathOpen + (this.kind === 'conductor' ? this.s.loud * 0.06 : 0);
     this.s.jaw = this.sm(this.s.jaw, jawTarget, 10);
@@ -287,6 +299,12 @@ export class Actor {
       rig.nudgeFace('lipLow', 0, seal * 0.8, 0);
     }
 
+    // brass players' faces redden in sustained loud playing; slowly fades in rests
+    if (family === 'brass' && this.char.skinMaterials.length) {
+      const target = blowing ? clamp01((this.s.loud - 0.45) * 1.8) : 0;
+      this.s.flush = damp(this.s.flush, target, blowing ? 0.25 : 0.12, this.dt);
+      for (const m of this.char.skinMaterials) setFlush(m, this.s.flush);
+    }
     for (const d of this.debugFace) {
       rig.rotateFace(d.key as never, d.pitch ?? 0, d.yaw ?? 0, d.roll ?? 0);
       if (d.x || d.y || d.z) rig.nudgeFace(d.key as never, d.x ?? 0, d.y ?? 0, d.z ?? 0);

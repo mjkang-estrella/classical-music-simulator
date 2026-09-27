@@ -31,6 +31,8 @@ export interface CharacterInstance {
   id: string;
   /** eye-position uniforms of this character's skin materials (for wet-eye shading) */
   eyeUniforms: EyeUniforms[];
+  /** this character's own skin materials (per-musician instances) */
+  skinMaterials: Material[];
 }
 
 const BASE = import.meta.env.BASE_URL ?? '/';
@@ -171,20 +173,22 @@ export function createCharacter(seed: number, section: string, conductor = false
     const compact = lods.filter(Boolean);
     const rig = new Rig(root);
     const eyeUniforms = new Set<EyeUniforms>();
+    const skinMaterials = new Set<Material>();
     for (const list of compact)
       for (const mesh of list) {
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         for (const m of mats) {
           const e = (m as Material).userData.eyeUniforms as EyeUniforms | undefined;
           if (e && (m as Material).userData.skin) eyeUniforms.add(e);
+          if ((m as Material).userData.skin) skinMaterials.add(m as Material);
         }
       }
-    return { root, rig, lods: compact, source: 'glb', id: proto.entry.id, eyeUniforms: [...eyeUniforms] };
+    return { root, rig, lods: compact, source: 'glb', id: proto.entry.id, eyeUniforms: [...eyeUniforms], skinMaterials: [...skinMaterials] };
   }
   const { root, mesh } = buildMannequinCached(seed, conductor);
   mesh.material = sectionMaterial(section, mesh.material as Material);
   const rig = new Rig(root);
-  return { root, rig, lods: [[mesh]], source: 'mannequin', id: 'mannequin', eyeUniforms: [] };
+  return { root, rig, lods: [[mesh]], source: 'mannequin', id: 'mannequin', eyeUniforms: [], skinMaterials: [] };
 }
 
 const instanceCache = new Map<string, Material>();
