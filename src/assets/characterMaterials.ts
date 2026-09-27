@@ -1,4 +1,4 @@
-import { Color, DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, ShaderChunk, Texture, Vector2, type WebGLProgramParametersWithUniforms } from 'three';
+import { Color, DataTexture, DoubleSide, FrontSide, LinearFilter, LinearMipmapLinearFilter, Material, MeshPhysicalMaterial, MeshStandardMaterial, RepeatWrapping, RGBAFormat, ShaderChunk, Texture, UnsignedByteType, Vector2, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 
 /**
  * Realistic character shading on top of the Rocketbox textures:
@@ -26,7 +26,71 @@ export function classifyMaterial(name: string, mat: MeshStandardMaterial): Chara
 
 const SKIN_UNIFORMS = {
   uSkinStrength: { value: 1 },
+  uPoreStrength: { value: 0.35 },
+  uPoreMap: { value: null as Texture | null },
 };
+
+/**
+ * Tileable micro-detail normal map for skin: scattered pores plus fine fibrous noise, so faces and
+ * hands keep texture at close range where the source maps are soft.
+ */
+function poreTexture(size = 256): DataTexture {
+  const h = new Float32Array(size * size);
+  let seed = 1337;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const idx = (x: number, y: number) => ((y + size) % size) * size + ((x + size) % size);
+  // pores: small soft dimples
+  for (let i = 0; i < 900; i++) {
+    const cx = rnd() * size;
+    const cy = rnd() * size;
+    const r = 0.9 + rnd() * 1.6;
+    const d = 0.5 + rnd() * 0.5;
+    for (let y = Math.floor(cy - 3 * r); y <= cy + 3 * r; y++)
+      for (let x = Math.floor(cx - 3 * r); x <= cx + 3 * r; x++) {
+        const q = ((x - cx) ** 2 + (y - cy) ** 2) / (r * r);
+        h[idx(x, y)] -= d * Math.exp(-q);
+      }
+  }
+  // fine creases: value noise at two scales
+  const vn = (freq: number, amp: number) => {
+    const g = Math.max(2, Math.floor(size / freq));
+    const grid = new Float32Array((g + 1) * (g + 1)).map(() => rnd());
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        const fx = (x / size) * g;
+        const fy = (y / size) * g;
+        const x0 = Math.floor(fx);
+        const y0 = Math.floor(fy);
+        const tx = fx - x0;
+        const ty = fy - y0;
+        const at = (a: number, b: number) => grid[(b % g) * (g + 1) + (a % g)];
+        const v = at(x0, y0) * (1 - tx) * (1 - ty) + at(x0 + 1, y0) * tx * (1 - ty) + at(x0, y0 + 1) * (1 - tx) * ty + at(x0 + 1, y0 + 1) * tx * ty;
+        h[y * size + x] += (v - 0.5) * amp;
+      }
+  };
+  vn(24, 0.35);
+  vn(64, 0.2);
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const dx = (h[idx(x + 1, y)] - h[idx(x - 1, y)]) * 0.9;
+      const dy = (h[idx(x, y + 1)] - h[idx(x, y - 1)]) * 0.9;
+      const n = new Vector3(-dx, -dy, 1).normalize();
+      const o = (y * size + x) * 4;
+      data[o] = Math.round((n.x * 0.5 + 0.5) * 255);
+      data[o + 1] = Math.round((n.y * 0.5 + 0.5) * 255);
+      data[o + 2] = Math.round((n.z * 0.5 + 0.5) * 255);
+      data[o + 3] = 255;
+    }
+  const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
+  return tex;
+}
 
 /** Skin mask + tint, inserted after the base colour is known. */
 const SKIN_MASK = /* glsl */ `
@@ -51,7 +115,7 @@ const SKIN_MASK = /* glsl */ `
 /** Replacement for the final diffuse line of RE_Direct_Physical: wrap lighting inside skin. */
 const SSS_DIFFUSE = /* glsl */ `
   vec3 sssIrradiance = irradiance;
-  if ( skinMask > 0.001 ) {
+  if ( skinMask * ( 1.0 - eyeMask ) > 0.001 ) {
     float ndl = dot( geometryNormal, directLight.direction );
     // red light travels furthest under the skin, blue the least
     vec3 wrapW = vec3( 0.4, 0.2, 0.14 );
@@ -64,11 +128,44 @@ const SSS_DIFFUSE = /* glsl */ `
   reflectedLight.directDiffuse += sssIrradiance * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );
 `;
 
+/** Eyeball gloss: fragments on the eyeball (near the eye bones) become wet and mirror-like. */
+const EYE_GLOSS = /* glsl */ `
+  #include <roughnessmap_fragment>
+  {
+    float dL = distance( vCharWPos, uEyeL );
+    float dR = distance( vCharWPos, uEyeR );
+    eyeMask = 1.0 - smoothstep( uEyeRadius * 0.92, uEyeRadius * 1.08, min( dL, dR ) );
+    roughnessFactor = mix( roughnessFactor, 0.035, eyeMask );
+  }
+`;
+
+/** Skin pores: a tiling detail normal blended into the skin only. */
+const PORES = /* glsl */ `
+  #include <normal_fragment_maps>
+  #if defined( USE_NORMALMAP_TANGENTSPACE ) && defined( USE_MAP )
+  if ( skinMask > 0.01 && uPoreStrength > 0.0 ) {
+    vec3 poreN = texture2D( uPoreMap, vMapUv * 36.0 ).xyz * 2.0 - 1.0;
+    float fade = 1.0 - eyeMask;
+    normal = normalize( normal + tbn * vec3( poreN.xy * uPoreStrength * skinMask * fade, 0.0 ) );
+  }
+  #endif
+`;
+
 function patchSkin(shader: WebGLProgramParametersWithUniforms, hairTint: boolean) {
   shader.uniforms.uSkinStrength = SKIN_UNIFORMS.uSkinStrength;
+  shader.uniforms.uPoreStrength = SKIN_UNIFORMS.uPoreStrength;
+  shader.uniforms.uPoreMap = SKIN_UNIFORMS.uPoreMap;
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vCharWPos;')
+    .replace('#include <skinning_vertex>', '#include <skinning_vertex>\nvCharWPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', '#include <common>\nfloat skinMask = 0.0;\nuniform float uSkinStrength;\nuniform vec3 uSkinTint;\nuniform vec3 uHairTint;')
+    .replace(
+      '#include <common>',
+      '#include <common>\nfloat skinMask = 0.0;\nfloat eyeMask = 0.0;\nvarying vec3 vCharWPos;\nuniform float uSkinStrength;\nuniform float uPoreStrength;\nuniform sampler2D uPoreMap;\nuniform vec3 uSkinTint;\nuniform vec3 uHairTint;\nuniform vec3 uEyeL;\nuniform vec3 uEyeR;\nuniform float uEyeRadius;',
+    )
     .replace('#include <color_fragment>', `#include <color_fragment>\n${hairTint ? 'diffuseColor.rgb *= uHairTint;' : SKIN_MASK}`)
+    .replace('#include <roughnessmap_fragment>', hairTint ? '#include <roughnessmap_fragment>' : EYE_GLOSS)
+    .replace('#include <normal_fragment_maps>', hairTint ? '#include <normal_fragment_maps>' : PORES)
     .replace(
       '#include <lights_physical_pars_fragment>',
       THREE_LIGHTS_PHYSICAL().replace(
@@ -177,10 +274,16 @@ export function installShader(m: Material) {
   u.hairTint = new Color(1, 1, 1);
   const skinTint = { value: u.skinTint };
   const hairTint = { value: u.hairTint };
+  const eye = { l: { value: new Vector3(0, -99, 0) }, r: { value: new Vector3(0, -99, 0) }, radius: { value: 0.0125 } };
+  (m.userData as { eyeUniforms?: typeof eye }).eyeUniforms = eye;
+  SKIN_UNIFORMS.uPoreMap.value ??= typeof document !== 'undefined' ? poreTexture() : null;
   m.onBeforeCompile = (shader) => {
     patchSkin(shader, !!u.hair);
     shader.uniforms.uSkinTint = skinTint;
     shader.uniforms.uHairTint = hairTint;
+    shader.uniforms.uEyeL = eye.l;
+    shader.uniforms.uEyeR = eye.r;
+    shader.uniforms.uEyeRadius = eye.radius;
   };
   m.customProgramCacheKey = () => (u.hair ? 'orchestra-hair' : 'orchestra-skin');
 }
@@ -188,6 +291,17 @@ export function installShader(m: Material) {
 /** Global strength of the skin scattering (0 disables it). */
 export function setSkinScattering(v: number) {
   SKIN_UNIFORMS.uSkinStrength.value = v;
+}
+
+/** Global strength of the skin pore detail (0 disables it). */
+export function setPoreStrength(v: number) {
+  SKIN_UNIFORMS.uPoreStrength.value = v;
+}
+
+export interface EyeUniforms {
+  l: { value: Vector3 };
+  r: { value: Vector3 };
+  radius: { value: number };
 }
 
 /** Per-musician look: skin tone multiplier and hair colour multiplier. */

@@ -86,6 +86,12 @@ export class Actor {
   debugFace: { key: string; pitch?: number; yaw?: number; roll?: number; x?: number; y?: number; z?: number }[] = [];
   /** camera distance, used for level of detail */
   distance = 10;
+  /** debug: scales the wet-eye region (0 disables it) */
+  static eyeGloss = 1;
+  /** debug: disables eye aiming */
+  static eyeAim = true;
+  /** debug: overrides every gaze target with this world point */
+  static gazeOverride: Vector3 | null = null;
 
   constructor(musician: Musician | null, pos: Vector3, yaw: number, kind: ActorKind, seatKind: 'chair' | 'stool' | 'standing', variant?: number) {
     this.musician = musician;
@@ -287,7 +293,17 @@ export class Actor {
     }
     // --- eyes last (needs current world matrices of the head)
     rig.bones.Head?.updateMatrixWorld(true);
-    rig.aimEyes(target, 1, 0.42);
+    if (Actor.eyeAim) rig.aimEyes(Actor.gazeOverride ?? target, 1, 0.42);
+    // wet-eye shading follows the eyeballs
+    const eL = rig.face.eyeL;
+    const eR = rig.face.eyeR;
+    if (eL && eR) {
+      for (const u of this.char.eyeUniforms) {
+        eL.getWorldPosition(u.l.value);
+        eR.getWorldPosition(u.r.value);
+        u.radius.value = 0.0125 * this.scale * Actor.eyeGloss;
+      }
+    }
   }
 
   // ------------------------------------------------------------------ helpers

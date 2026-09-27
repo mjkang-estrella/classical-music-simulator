@@ -3,7 +3,8 @@ import { orchestra } from '../scene/orchestra';
 import { cameraHandle } from '../scene/Viewport';
 import { loadPiece, play, pause, seek } from './controller';
 import { useApp } from './store';
-import { setSkinScattering } from '../assets/characterMaterials';
+import { Actor } from '../animation/actor';
+import { setPoreStrength, setSkinScattering } from '../assets/characterMaterials';
 
 /** Test / debugging hooks (used by the Playwright end-to-end tests). */
 const api = {
@@ -61,6 +62,33 @@ const api = {
     return a ? Object.fromEntries(Object.entries(a.rig.face).map(([k, b]) => [k, b?.name])) : null;
   },
   skin: (v: number) => setSkinScattering(v),
+  eyeProbe: (id: string) => {
+    const a = orchestra.actorById(id);
+    const e = a?.rig.face.eyeL;
+    if (!a || !e) return null;
+    const r = (v: { x: number; y: number; z: number }) => [v.x, v.y, v.z].map((n) => +n.toFixed(3));
+    const q = e.getWorldQuaternion(e.quaternion.clone());
+    const axes = [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+    ].map(([x, y, z]) => r(e.position.clone().set(x, y, z).applyQuaternion(q)));
+    const head = a.rig.bones.Head!;
+    const hq = head.getWorldQuaternion(head.quaternion.clone());
+    const hAxes = [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+    ].map(([x, y, z]) => r(e.position.clone().set(x, y, z).applyQuaternion(hq)));
+    return { last: a.rig.lastEye, eyeWorld: r(e.getWorldPosition(e.position.clone())), eyeAxes: axes, headAxes: hAxes, rootYaw: +a.root.rotation.y.toFixed(3), children: e.children.map((c) => c.name) };
+  },
+  eyeGloss: (v: number) => (Actor.eyeGloss = v),
+  gazeAtCamera: (on: boolean) => {
+    const c = cameraHandle.controls;
+    Actor.gazeOverride = on && c ? c.camera.position : null;
+  },
+  eyeAim: (v: boolean) => (Actor.eyeAim = v),
+  pores: (v: number) => setPoreStrength(v),
   stands: (v: boolean) => orchestra.setStandsVisible(v),
   perf: () => ({ updateMs: +orchestra.lastUpdateMs.toFixed(2) }),
   /** raw access for debugging in the console */

@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { Rig } from '../rig/rig';
-import { installShader, personalize, realisticMaterial } from './characterMaterials';
+import { installShader, personalize, realisticMaterial, type EyeUniforms } from './characterMaterials';
 import { registerInstanceMaterial, sectionMaterial } from './instrumentFactory';
 import { buildMannequin, mannequinStyle } from './placeholder/mannequin';
 
@@ -29,6 +29,8 @@ export interface CharacterInstance {
   lods: SkinnedMesh[][];
   source: 'glb' | 'mannequin';
   id: string;
+  /** eye-position uniforms of this character's skin materials (for wet-eye shading) */
+  eyeUniforms: EyeUniforms[];
 }
 
 const BASE = import.meta.env.BASE_URL ?? '/';
@@ -163,12 +165,21 @@ export function createCharacter(seed: number, section: string, conductor = false
     for (const [mesh, twin] of twins) mesh.parent?.add(twin);
     const compact = lods.filter(Boolean);
     const rig = new Rig(root);
-    return { root, rig, lods: compact, source: 'glb', id: proto.entry.id };
+    const eyeUniforms = new Set<EyeUniforms>();
+    for (const list of compact)
+      for (const mesh of list) {
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const m of mats) {
+          const e = (m as Material).userData.eyeUniforms as EyeUniforms | undefined;
+          if (e && (m as Material).userData.skin) eyeUniforms.add(e);
+        }
+      }
+    return { root, rig, lods: compact, source: 'glb', id: proto.entry.id, eyeUniforms: [...eyeUniforms] };
   }
   const { root, mesh } = buildMannequinCached(seed, conductor);
   mesh.material = sectionMaterial(section, mesh.material as Material);
   const rig = new Rig(root);
-  return { root, rig, lods: [[mesh]], source: 'mannequin', id: 'mannequin' };
+  return { root, rig, lods: [[mesh]], source: 'mannequin', id: 'mannequin', eyeUniforms: [] };
 }
 
 const instanceCache = new Map<string, Material>();

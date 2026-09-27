@@ -150,6 +150,7 @@ export class Rig {
   /** optional facial bones (Rocketbox Biped face rig) */
   readonly face: FaceBones = {};
   private readonly eyeBindQ = new Map<Bone, Quaternion>();
+  private headBindQ: Quaternion | null = null;
   private readonly facePosBind = new Map<Bone, Vector3>();
 
   /** `root` must be at the origin with identity rotation when constructed. */
@@ -299,6 +300,7 @@ export class Rig {
       this.facePosBind.set(bone, bone.position.clone());
     }
     for (const eye of [this.face.eyeL, this.face.eyeR]) if (eye) this.eyeBindQ.set(eye, worldQuat(eye, new Quaternion()));
+    if (b.Head) this.headBindQ = worldQuat(b.Head, new Quaternion());
 
     for (const name of ['Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder', 'Hips', 'Jaw'] as CanonBone[]) {
       const bone = b[name];
@@ -526,27 +528,33 @@ export class Rig {
   }
 
   /**
-   * Turns both eyes toward a world-space point (clamped to ±limit radians from the head's
-   * forward direction). Needs current world matrices (call after update()).
+   * Turns both eyes toward a world-space point. The direction is expressed relative to the head's
+   * bind orientation and applied as yaw / pitch about bind-time axes (robust to the Biped bone
+   * frames). Needs current world matrices (call after update()).
    */
   aimEyes(target: Vector3, amount = 1, limit = 0.45): void {
-    for (const eye of [this.face.eyeL, this.face.eyeR]) {
+    const head = this.bones.Head;
+    if (!head || !this.headBindQ) return;
+    // rotation of the head since bind, in world space
+    const headRot = worldQuat(head, _qa).multiply(_qb.copy(this.headBindQ).invert());
+    const inv = _qp.copy(headRot).invert();
+    for (const key of ['eyeL', 'eyeR'] as const) {
+      const eye = this.face[key];
       if (!eye) continue;
-      const bindQ = this.eyeBindQ.get(eye)!;
-      const qNow = worldQuat(eye, _qa);
-      // the eye's resting forward, carried along by the head
-      const rest = _qb.copy(qNow).multiply(_qp.copy(bindQ).invert());
-      const fwd = _v.set(0, 0, 1).applyQuaternion(rest);
-      const to = _v2.copy(target).sub(worldPos(eye, _v3)).normalize();
-      let angle = fwd.angleTo(to);
-      if (angle < 1e-4) continue;
-      const scale = Math.min(1, limit / angle) * amount;
-      angle *= scale;
-      const axis = _v3.crossVectors(fwd, to).normalize();
-      const delta = _qx.setFromAxisAngle(axis, angle);
-      this.setWorldQuat(eye, delta.multiply(qNow));
+      const dir = _v2.copy(target).sub(worldPos(eye, _v3)).normalize().applyQuaternion(inv);
+      // in the bind frame the character looks along +Z, +X is its left, +Y up
+      // the Biped eye pivot sits slightly off the eyeball centre, so large rotations slide the
+      // iris under the lids: keep the eye within a small cone and let the head do the rest
+      const yawRaw = Math.atan2(dir.x, dir.z);
+      const pitchRaw = -Math.atan2(dir.y, Math.hypot(dir.x, dir.z));
+      const soft = (v: number, lim: number) => lim * Math.tanh(v / lim);
+      const yaw = soft(yawRaw * 0.6, limit * 0.4) * amount;
+      const pitch = soft(pitchRaw * 0.5, limit * 0.22) * amount;
+      this.lastEye = { yaw, pitch, dir: [dir.x, dir.y, dir.z] };
+      this.rotateFace(key, pitch, yaw);
     }
   }
+  lastEye: { yaw: number; pitch: number; dir: number[] } | null = null;
 
   hasFingers(side: Side): boolean {
     return !!this.fingers[side].Index;
