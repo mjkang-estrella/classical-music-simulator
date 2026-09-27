@@ -108,7 +108,7 @@ const SKIN_MASK = /* glsl */ `
     diffuseColor.rgb *= mix( vec3( 1.0 ), uSkinTint, skinMask );
     // the source textures are over-saturated for stage light; pull skin toward its luminance a little
     float lum = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );
-    diffuseColor.rgb = mix( diffuseColor.rgb, vec3( lum ), 0.14 * skinMask );
+    diffuseColor.rgb = mix( diffuseColor.rgb, vec3( lum ), 0.2 * skinMask );
   }
 `;
 
@@ -135,6 +135,7 @@ const EYE_GLOSS = /* glsl */ `
     float dL = distance( vCharWPos, uEyeL );
     float dR = distance( vCharWPos, uEyeR );
     eyeMask = 1.0 - smoothstep( uEyeRadius * 0.92, uEyeRadius * 1.08, min( dL, dR ) );
+    roughnessFactor = mix( roughnessFactor, min( 1.0, roughnessFactor * 1.18 + 0.04 ), skinMask );
     roughnessFactor = mix( roughnessFactor, 0.035, eyeMask );
   }
 `;

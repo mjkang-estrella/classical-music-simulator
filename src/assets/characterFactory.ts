@@ -34,6 +34,7 @@ export interface CharacterInstance {
 }
 
 const BASE = import.meta.env.BASE_URL ?? '/';
+const POSE_BOUNDS = new Sphere(new Vector3(0, 0.85, 0.15), 1.35);
 let protos: Proto[] = [];
 let loaded = false;
 
@@ -135,7 +136,10 @@ export function createCharacter(seed: number, section: string, conductor = false
       if ((mesh as Mesh).isMesh && !mesh.userData.hairTwin) {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        mesh.frustumCulled = false;
+        // conservative bounds that hold for any seated / standing / reaching pose, so off-screen
+        // musicians are culled (the bind-pose bounds would be wrong once animated)
+        mesh.boundingSphere = POSE_BOUNDS.clone();
+        mesh.frustumCulled = true;
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         // each musician gets their own material instances so skin tone / hair colour can vary
         const mapped = mats.map((m) => instanceMaterial(m as Material, section, seed));
@@ -151,7 +155,8 @@ export function createCharacter(seed: number, section: string, conductor = false
             twin.position.copy(mesh.position);
             twin.quaternion.copy(mesh.quaternion);
             twin.scale.copy(mesh.scale);
-            twin.frustumCulled = false;
+            twin.boundingSphere = POSE_BOUNDS.clone();
+            twin.frustumCulled = true;
             twin.renderOrder = 3;
             twin.castShadow = false;
             twin.bind(mesh.skeleton, mesh.bindMatrix);

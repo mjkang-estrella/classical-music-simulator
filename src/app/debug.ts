@@ -82,6 +82,10 @@ const api = {
     ].map(([x, y, z]) => r(e.position.clone().set(x, y, z).applyQuaternion(hq)));
     return { last: a.rig.lastEye, eyeWorld: r(e.getWorldPosition(e.position.clone())), eyeAxes: axes, headAxes: hAxes, rootYaw: +a.root.rotation.y.toFixed(3), children: e.children.map((c) => c.name) };
   },
+  twist: (id: string) => {
+    const a = orchestra.actorById(id);
+    return a ? { L: a.rig.hands.Left.twist?.name ?? null, R: a.rig.hands.Right.twist?.name ?? null, lods: a.char.lods.length } : null;
+  },
   eyeGloss: (v: number) => (Actor.eyeGloss = v),
   gazeAtCamera: (on: boolean) => {
     const c = cameraHandle.controls;

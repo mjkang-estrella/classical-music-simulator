@@ -170,7 +170,8 @@ export class Orchestra {
   private applyLod(a: Actor) {
     const lods = a.char.lods;
     if (lods.length <= 1) return;
-    const level = a.distance < 9 ? 0 : a.distance < 20 ? 1 : 2;
+    // 4 LODs: subdivided close-up mesh, full mesh, then two decimated ones
+    const level = lods.length >= 4 ? (a.distance < 3.5 ? 0 : a.distance < 11 ? 1 : a.distance < 22 ? 2 : 3) : a.distance < 9 ? 0 : a.distance < 20 ? 1 : 2;
     const chosen = Math.min(level, lods.length - 1);
     lods.forEach((meshes, i) => meshes.forEach((m) => (m.visible = i === chosen)));
   }

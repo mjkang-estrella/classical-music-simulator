@@ -1,10 +1,10 @@
-import { CameraControls } from '@react-three/drei';
+import { CameraControls, PerformanceMonitor } from '@react-three/drei';
 import { BrightnessContrast, DepthOfField, EffectComposer, HueSaturation, N8AO, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { Exposure } from './exposure';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Color, EquirectangularReflectionMapping, Fog, Group, Mesh, MeshBasicMaterial, NoToneMapping, PMREMGenerator, RingGeometry, SpotLight, SRGBColorSpace, Vector3 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { transport } from '../audio/transport';
@@ -15,10 +15,14 @@ import { SECTIONS } from '../orchestra/sections';
 import type { SectionId } from '../music/types';
 
 export function Viewport() {
+  // adaptive resolution: drop the pixel ratio if the frame rate can't be held
+  const [tier, setTier] = useState(2);
+  const [aoOk, setAoOk] = useState(true);
+  const dpr = tier >= 2 ? Q.dpr : tier === 1 ? Math.min(Q.dpr, 1.35) : 1;
   return (
     <Canvas
       shadows
-      dpr={[1, 1.75]}
+      dpr={[1, dpr]}
       camera={{ position: [0, 4.2, 14], fov: 38, near: 0.05, far: 220 }}
       gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
       onCreated={({ gl, scene }) => {
@@ -37,7 +41,18 @@ export function Viewport() {
       <Rings />
       <CameraRig />
       <Picking />
-      <Post />
+      <PerformanceMonitor
+        bounds={() => [56, 59.5]}
+        flipflops={3}
+        onDecline={() => setTier((t) => Math.max(0, t - 1))}
+        onIncline={() => setTier((t) => Math.min(2, t + 1))}
+        onFallback={() => {
+          // oscillating: settle on a sharp image without close-up ambient occlusion
+          setAoOk(false);
+          setTier(1);
+        }}
+      />
+      <Post allowAo={tier > 0 && aoOk} />
     </Canvas>
   );
 }
@@ -71,8 +86,24 @@ function Environment() {
 }
 
 /** Post-processing: ambient occlusion, depth of field on the followed musician, AgX tone mapping. */
-function Post() {
+/** Render-quality switches (URL: ?ao=0&dof=0&msaa=0&post=0&shadow=2048&dpr=1) for profiling. */
+const Q = (() => {
+  const p = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+  const flag = (k: string, d: boolean) => (p.has(k) ? p.get(k) !== '0' : d);
+  return {
+    post: flag('post', true),
+    ao: flag('ao', true),
+    dof: flag('dof', true),
+    msaa: Number(p.get('msaa') ?? 4),
+    shadow: Number(p.get('shadow') ?? 4096),
+    dpr: Number(p.get('dpr') ?? 1.75),
+    aoQuality: (p.get('aoq') ?? 'performance') as 'performance' | 'low' | 'medium',
+  };
+})();
+
+function Post({ allowAo }: { allowAo: boolean }) {
   const dof = useRef<DepthOfFieldEffect>(null);
+  const following = useApp((s) => !!s.selectedId && s.follow);
   const focus = useMemo(() => new Vector3(), []);
   const blur = useRef(0);
   useFrame((_, dt) => {
@@ -88,10 +119,15 @@ function Post() {
     }
     e.bokehScale = blur.current * 2.6;
   });
+  if (!Q.post) return null;
+  // close-up effects only while a musician is followed: depth of field, and ambient occlusion
+  // (N8AO re-renders the scene; in a close-up frustum culling keeps that cheap)
+  const dofOn = Q.dof && following;
+  const ao = following && allowAo;
   return (
-    <EffectComposer multisampling={4}>
-      <N8AO aoRadius={0.45} distanceFalloff={0.5} intensity={2.2} quality="medium" halfRes />
-      <DepthOfField ref={dof} worldFocusRange={1.4} bokehScale={0} />
+    <EffectComposer multisampling={Q.msaa}>
+      {Q.ao && ao ? <N8AO aoRadius={0.35} distanceFalloff={0.5} intensity={2.2} aoSamples={8} denoiseSamples={4} denoiseRadius={8} halfRes /> : <></>}
+      {dofOn ? <DepthOfField ref={dof} worldFocusRange={1.4} bokehScale={0} resolutionScale={0.5} /> : <></>}
       <Vignette offset={0.32} darkness={0.55} />
       <Exposure exposure={0.58} />
       <ToneMapping mode={ToneMappingMode.NEUTRAL} />
@@ -126,7 +162,7 @@ function Lights() {
         intensity={1.25}
         color="#fff0e0"
         castShadow
-        shadow-mapSize={[4096, 4096]}
+        shadow-mapSize={[Q.shadow, Q.shadow]}
         shadow-radius={4}
         shadow-camera-left={-15}
         shadow-camera-right={15}
