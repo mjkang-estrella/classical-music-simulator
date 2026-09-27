@@ -121,7 +121,9 @@ export function characterVariantCount(): number {
  */
 export function createCharacter(seed: number, section: string, conductor = false, variant?: number): CharacterInstance {
   if (protos.length) {
-    const pool = conductor ? protos.filter((p) => p.entry.gender !== 'female') : protos;
+    // the conductor wears all black (Business_Male_06) when that avatar is available
+    const formal = protos.filter((p) => /business_male_06/.test(p.entry.id));
+    const pool = conductor ? (formal.length ? formal : protos.filter((p) => p.entry.gender !== 'female')) : protos;
     const list = pool.length ? pool : protos;
     const proto = variant !== undefined && !conductor ? protos[variant % protos.length] : list[Math.floor(seed * list.length) % list.length];
     const root = new Group();

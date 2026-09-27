@@ -236,7 +236,7 @@ const PRESETS: Record<CameraPreset, { pos: [number, number, number]; target: [nu
   audience: { pos: [0, 4.2, 14], target: [0, 0.9, -4.6] },
   balcony: { pos: [0, 13, 24], target: [0, 0.4, -4.5] },
   overhead: { pos: [0, 23, -3.5], target: [0, 0, -4.8] },
-  conductor: { pos: [0, 2.05, 0.75], target: [0, 1.15, -6] },
+  conductor: { pos: [0.45, 2.35, 1.5], target: [0, 1.05, -6] },
   strings: { pos: [0.4, 3.2, 3.2], target: ['violin1', 'violin2', 'viola', 'cello'] },
   woodwinds: { pos: [0, 3.4, -1.6], target: ['flute', 'oboe', 'clarinet', 'bassoon'] },
   brass: { pos: [4.2, 4.2, -2.2], target: ['horn', 'trumpet', 'trombone', 'tuba'] },

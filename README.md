@@ -82,7 +82,7 @@ MIDI ──► Score (parts, beat grid, loudness) ──► Plans (bowing, raise
 
 ## Realism features
 
-- **Characters.** Microsoft Rocketbox avatars are processed by the Blender pipeline in `tools/blender/`:
+- **Characters.** 12 Microsoft Rocketbox avatars (7 men, 5 women) are processed by the Blender pipeline in `tools/blender/`:
   - 2k textures, with roughness maps derived from the specular maps;
   - a subdivided LOD for close-ups plus 3 lower LODs;
   - forearm twist bones re-weighted into the skin;
