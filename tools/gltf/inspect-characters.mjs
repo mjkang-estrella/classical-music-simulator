@@ -9,6 +9,10 @@
  *
  * Prints skins, joint count, inverseBindMatrices, per-LOD triangle counts, bind-pose bounding box,
  * textures, and bind-pose world positions of the key joints. Exits 1 if a check fails.
+ * Checks: one skin with IBMs for every joint (incl. the forearm twist bones), mesh nodes = the LOD
+ * names of tools/blender/characters.json, all on that skin, LOD0 <= its maxTriangles, <= 4
+ * influences, twist bones = children of the forearms at `fraction` elbow->wrist with the forearm's
+ * frame, hands still children of the forearms, file size <= 6 MB.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +27,11 @@ const CAST = path.join(ROOT, 'tools/blender/characters.json');
 
 // three.js PropertyBinding.sanitizeNodeName
 const sanitize = (name) => name.replace(/\s/g, '_').replace(/[\[\]\.:\/]/g, '');
+const CAST_JSON = JSON.parse(fs.readFileSync(CAST, 'utf8'));
+const LOD_SPECS = CAST_JSON.defaults.lods;
+const TWIST_CFG = CAST_JSON.defaults.twistBones ?? {};
+const TWIST = { L: 'Bip01 L ForeTwist', R: 'Bip01 R ForeTwist' };
+const MAX_BYTES = 6e6;
 
 const KEY_JOINTS = [
   'Bip01 Pelvis', 'Bip01 Spine', 'Bip01 Spine1', 'Bip01 Spine2', 'Bip01 Neck', 'Bip01 Head',
@@ -32,7 +41,7 @@ const KEY_JOINTS = [
   'Bip01 L Thigh', 'Bip01 L Calf', 'Bip01 L Foot', 'Bip01 L Toe0',
   'Bip01 R Thigh', 'Bip01 R Calf', 'Bip01 R Foot', 'Bip01 R Toe0',
   'Bip01 MJaw', 'Bip01 LEyeBlinkTop', 'Bip01 LEyeBlinkBottom', 'Bip01 REyeBlinkTop', 'Bip01 REyeBlinkBottom',
-  'Bip01 LEye', 'Bip01 REye', 'Bip01 MNose',
+  'Bip01 LEye', 'Bip01 REye', 'Bip01 MNose', 'Bip01 L ForeTwist', 'Bip01 R ForeTwist',
 ];
 
 const args = process.argv.slice(2);
@@ -96,17 +105,22 @@ function vertCount(mesh) {
 
 function usedJoints(mesh, jointCount) {
   const used = new Set();
+  let extraSets = 0;
+  let badSum = 0;
   for (const p of mesh.listPrimitives()) {
     const J = p.getAttribute('JOINTS_0');
     const W = p.getAttribute('WEIGHTS_0');
+    if (p.getAttribute('JOINTS_1')) extraSets++;
     if (!J || !W) continue;
     const j = [], w = [];
     for (let i = 0; i < J.getCount(); i++) {
       J.getElement(i, j); W.getElement(i, w);
-      for (let k = 0; k < 4; k++) if (w[k] > 0) used.add(j[k]);
+      let sum = 0;
+      for (let k = 0; k < 4; k++) { sum += w[k]; if (w[k] > 0) used.add(j[k]); }
+      if (Math.abs(sum - 1) > 0.01) badSum++;
     }
   }
-  return [...used].filter((i) => i < jointCount).length;
+  return { count: [...used].filter((i) => i < jointCount).length, used, extraSets, badSum };
 }
 
 async function inspect(file) {
@@ -128,16 +142,25 @@ async function inspect(file) {
     triangles: triCount(n.getMesh()),
     vertices: vertCount(n.getMesh()),
     bones: n.getSkin() ? n.getSkin().listJoints().length : 0,
-    weightedBones: usedJoints(n.getMesh(), joints.length),
+    ...(() => {
+      const u = usedJoints(n.getMesh(), joints.length);
+      return { weightedBones: u.count, twistWeighted: Object.values(TWIST).every((t) => u.used.has(joints.findIndex((j) => j.getName() === t))), extraInfluenceSets: u.extraSets, badWeightSums: u.badSum };
+    })(),
     primitives: n.getMesh().listPrimitives().map((p) => {
       const m = p.getMaterial();
       return m ? `${m.getName()}:${m.getAlphaMode()}${m.getAlphaMode() === 'MASK' ? '@' + m.getAlphaCutoff() : ''}${m.getDoubleSided() ? ':2s' : ''}` : 'none';
     }),
     skin: n.getSkin() ? skins.indexOf(n.getSkin()) : -1,
   }));
-  for (const want of ['LOD0', 'LOD1', 'LOD2']) {
-    if (!lods.find((l) => l.name === want)) errors.push(`missing mesh node ${want}`);
+  for (const spec of LOD_SPECS) {
+    const l = lods.find((x) => x.name === spec.name);
+    if (!l) { errors.push(`missing mesh node ${spec.name}`); continue; }
+    if (spec.maxTriangles && l.triangles > spec.maxTriangles) errors.push(`${spec.name} ${l.triangles} tris > ${spec.maxTriangles}`);
+    if (l.extraInfluenceSets) errors.push(`${spec.name} has more than 4 influences (JOINTS_1)`);
+    if (l.badWeightSums) errors.push(`${spec.name} ${l.badWeightSums} vertices with weights not summing to 1`);
+    if (TWIST_CFG.enabled && !l.twistWeighted) errors.push(`${spec.name} has no twist-bone weights`);
   }
+  for (const l of lods) if (!LOD_SPECS.find((s) => s.name === l.name)) errors.push(`unexpected mesh node ${l.name}`);
   if (new Set(lods.map((l) => l.skin)).size !== 1 || lods.some((l) => l.skin < 0)) {
     errors.push('LOD meshes are not all bound to the same skin');
   }
@@ -184,6 +207,31 @@ async function inspect(file) {
     if (!byName.has(req)) errors.push(`missing joint ${req}`);
   }
   if ([...byName.keys()].some((n) => /footsteps/i.test(n))) errors.push('Footsteps bone still present');
+  // forearm twist bones
+  let twist = null;
+  if (TWIST_CFG.enabled) {
+    twist = {};
+    for (const [side, name] of Object.entries(TWIST)) {
+      const tw = byName.get(name);
+      const fa = byName.get(`Bip01 ${side} Forearm`);
+      const hand = byName.get(`Bip01 ${side} Hand`);
+      if (!tw) { errors.push(`missing joint ${name}`); continue; }
+      if (tw.getParentNode() !== fa) errors.push(`${name} is not a child of Bip01 ${side} Forearm`);
+      if (hand.getParentNode() !== fa) errors.push(`Bip01 ${side} Hand is not a child of Bip01 ${side} Forearm`);
+      if (tw.listChildren().length) errors.push(`${name} has children`);
+      const e = worldPos(fa), w = worldPos(hand), p = worldPos(tw);
+      const d = sub(w, e);
+      const frac = dot(sub(p, e), d) / dot(d, d);
+      const off = Math.hypot(...sub(p, e.map((v, i) => v + d[i] * frac)));
+      const mt = tw.getWorldMatrix(), mf = fa.getWorldMatrix();
+      const col = (m, c) => unit([m[c * 4], m[c * 4 + 1], m[c * 4 + 2]]);
+      const sameFrame = [0, 1, 2].every((c) => dot(col(mt, c), col(mf, c)) > 0.9999);
+      const axisDeg = (Math.acos(Math.min(1, Math.abs(dot(col(mt, 0), unit(d))))) * 180) / Math.PI;
+      if (Math.abs(frac - (TWIST_CFG.fraction ?? 0.55)) > 0.01 || off > 1e-3) errors.push(`${name} not at ${TWIST_CFG.fraction} of elbow->wrist (${frac.toFixed(3)}, off-axis ${off.toFixed(4)} m)`);
+      if (!sameFrame) errors.push(`${name} frame differs from the forearm`);
+      twist[sanitize(name)] = { parent: sanitize(fa.getName()), fraction: +frac.toFixed(3), sameFrameAsForearm: sameFrame, localXToWrist_deg: +axisDeg.toFixed(2) };
+    }
+  }
 
   const textures = root.listTextures().map((t) => {
     const size = ImageUtils.getSize(t.getImage(), t.getMimeType());
@@ -192,7 +240,28 @@ async function inspect(file) {
   const extensions = root.listExtensionsUsed().map((e) => e.extensionName);
   const rootNodes = root.getDefaultScene()?.listChildren().map((n) => n.getName()) ?? [];
   const bytes = fs.statSync(file).size;
-  if (bytes > 4.2e6) errors.push(`file size ${(bytes / 1e6).toFixed(2)} MB > 4 MB budget`);
+  if (bytes > MAX_BYTES) errors.push(`file size ${(bytes / 1e6).toFixed(2)} MB > ${MAX_BYTES / 1e6} MB budget`);
+  const materials = root.listMaterials().map((m) => {
+    const texOf = (t) => (t ? { name: t.getName() || t.getURI(), size: (ImageUtils.getSize(t.getImage(), t.getMimeType()) ?? []).join('x') } : null);
+    return {
+      name: m.getName(),
+      part: materialPart(m.getName()),
+      alphaMode: m.getAlphaMode(),
+      roughnessFactor: +m.getRoughnessFactor().toFixed(3),
+      metallicFactor: +m.getMetallicFactor().toFixed(3),
+      baseColorTexture: texOf(m.getBaseColorTexture()),
+      normalTexture: texOf(m.getNormalTexture()),
+      metallicRoughnessTexture: texOf(m.getMetallicRoughnessTexture()),
+    };
+  });
+  const texOwners = new Map();
+  for (const m of root.listMaterials()) for (const t of [m.getBaseColorTexture(), m.getNormalTexture(), m.getMetallicRoughnessTexture()]) if (t) texOwners.set(t, (texOwners.get(t) ?? 0) + 1);
+  const imgKeys = new Set();
+  for (const t of root.listTextures()) {
+    const key = `${t.getImage().byteLength}:${Buffer.from(t.getImage().subarray(0, 64)).toString('hex')}`;
+    if (imgKeys.has(key)) errors.push(`duplicate image data: ${t.getName()}`);
+    imgKeys.add(key);
+  }
   if (animationsCount(root)) errors.push('file contains animations');
 
   return {
@@ -200,11 +269,22 @@ async function inspect(file) {
     ibm: ibm ? ibm.getCount() : 0, lods, bbox: { min: r3(bb.min), max: r3(bb.max) }, height: +height.toFixed(3),
     rootNodes, skeletonRoot: skin?.getSkeleton()?.getName() ?? null,
     jointNamesRaw: joints.map((j) => j.getName()), boneNames: joints.map((j) => sanitize(j.getName())),
-    keyJoints, armInfo, textures, extensions, errors,
+    keyJoints, armInfo, textures, materials, twist, extensions, errors,
   };
 }
 
 function animationsCount(root) { return root.listAnimations().length; }
+
+function materialPart(name) {
+  const n = name.toLowerCase();
+  if (n.endsWith('_eyes')) return 'eyes';
+  if (n.endsWith('_mouth')) return 'mouth';
+  if (/glasses/.test(n)) return 'glasses';
+  if (/opacity/.test(n)) return 'hair';
+  if (/head/.test(n)) return 'head';
+  if (/body/.test(n)) return 'body';
+  return 'other';
+}
 
 const results = [];
 for (const f of files) results.push(await inspect(f));
@@ -220,6 +300,8 @@ if (flags.has('--json')) {
     }
     console.log(`   bbox min=${r.bbox.min} max=${r.bbox.max} height=${r.height} m`);
     for (const t of r.textures) console.log(`   tex ${t.name} ${t.mime} ${t.size} ${(t.bytes / 1024).toFixed(0)} KB`);
+    for (const m of r.materials) console.log(`   mat ${m.name} [${m.part}] ${m.alphaMode} rough=${m.metallicRoughnessTexture ? 'map ' + m.metallicRoughnessTexture.name + ' x' + m.roughnessFactor : m.roughnessFactor} metal=${m.metallicFactor}`);
+    if (r.twist) console.log(`   twist ${Object.entries(r.twist).map(([k, v]) => `${k}<-${v.parent} @${v.fraction} sameFrame=${v.sameFrameAsForearm} x->wrist ${v.localXToWrist_deg}deg`).join('  ')}`);
     const k = r.keyJoints;
     console.log(`   head=${k.Bip01_Head} Lsh=${k.Bip01_L_UpperArm} Rsh=${k.Bip01_R_UpperArm} Lel=${k.Bip01_L_Forearm} Lwr=${k.Bip01_L_Hand} Lhip=${k.Bip01_L_Thigh} Lknee=${k.Bip01_L_Calf} Lank=${k.Bip01_L_Foot}`);
     console.log(r.errors.length ? `   FAIL: ${r.errors.join('; ')}` : '   OK');
@@ -241,7 +323,22 @@ if (flags.has('--write-sidecar')) {
       gender: c.gender,
       height_m: r.height,
       bytes: r.bytes,
-      lods: r.lods.map((l) => ({ name: l.name, triangles: l.triangles, bones: l.bones, weightedBones: l.weightedBones })),
+      lods: r.lods.map((l) => {
+        const spec = LOD_SPECS.find((s) => s.name === l.name) ?? {};
+        return { name: l.name, triangles: l.triangles, vertices: l.vertices, bones: l.bones, weightedBones: l.weightedBones, method: spec.method ?? 'copy' };
+      }),
+      twistBones: !!r.twist,
+      twist: r.twist
+        ? {
+            bones: Object.keys(r.twist),
+            parents: Object.fromEntries(Object.entries(r.twist).map(([k, v]) => [k, v.parent])),
+            fraction: TWIST_CFG.fraction,
+            axis: 'local +X (same frame and roll as the forearm; +X points to the wrist)',
+            drive: 'twist.quaternion = rotation about local +X by the hand\'s roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)',
+          }
+        : null,
+      materials: r.materials.map((m) => ({ name: m.name, part: m.part, alphaMode: m.alphaMode, roughness: m.metallicRoughnessTexture ? 'map' : m.roughnessFactor })),
+      textures: r.textures.map((t) => ({ name: t.name, size: t.size, bytes: t.bytes })),
       rig: 'bip01',
       rootNode: r.rootNodes[0] ?? null,
       boneNames: r.boneNames,
@@ -254,7 +351,11 @@ if (flags.has('--write-sidecar')) {
       },
       notes: [
         c.notes,
-        'LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes).',
+        LOD_SPECS.length > 3
+          ? 'LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes).'
+          : 'LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes).',
+        r.twist ? 'Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll.' : null,
+        r.materials.some((m) => m.part === 'eyes') ? 'Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures.' : null,
         'In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton.',
       ].filter(Boolean).join(' '),
     };

@@ -22,7 +22,8 @@ Rule format (characters.json -> characters[].recolor.<texture key>[]):
     "satScale": 0.1,              # multiply saturation
     "valScale": 0.2,              # multiply value
     "valMax":  0.15,              # optional clamp after scaling (flattens heather flecks)
-    "hueSet":  null               # optional absolute hue
+    "hueSet":  null,              # optional absolute hue
+    "holeFill": 2                 # optional, overrides defaults.recolorHoleFill (closing radius, px)
   }
 Pixels are selected with soft (feathered) HSV ranges so the result has no hard
 edges. A skin guard (defaults.skinGuard, HSV box) is always subtracted from the
@@ -33,6 +34,7 @@ matches "m005_body_color.tga".
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 
@@ -113,10 +115,30 @@ def hsv_box(hsv: np.ndarray, box: dict, feather: dict) -> np.ndarray:
     return w
 
 
+def _minmax_filter(x: np.ndarray, r: int, op) -> np.ndarray:
+    """Square (2r+1)^2 max/min filter via shifted views (edge-clamped)."""
+    p = np.pad(x, r, mode="edge")
+    h, w = x.shape
+    out = x.copy()
+    for dy in range(2 * r + 1):
+        for dx in range(2 * r + 1):
+            out = op(out, p[dy:dy + h, dx:dx + w])
+    return out
+
+
+def close_holes(w: np.ndarray, r: int) -> np.ndarray:
+    """Morphological closing of a soft mask: fills holes up to ~2r px (lint specks, stray bright
+    fibres that fall outside a rule's HSV box) without growing the mask's outline."""
+    if r <= 0:
+        return w
+    return np.maximum(w, _minmax_filter(_minmax_filter(w, r, np.maximum), r, np.minimum))
+
+
 def apply_rules(rgba: np.ndarray, rules: list, skin_guard: dict | None = None,
-                feather: dict | None = None):
+                feather: dict | None = None, hole_fill: int = 0):
     """rgba: (H, W, 4) float32 in 0..1, sRGB-encoded, origin top-left.
-    Returns (new_rgba, combined_mask)."""
+    hole_fill: closing radius (px) applied to each rule's HSV selection before the region rects
+    and the skin guard. Returns (new_rgba, combined_mask)."""
     feather = feather or {}
     hsv = rgb_to_hsv(rgba[..., :3])
     out_hsv = hsv.copy()
@@ -125,7 +147,7 @@ def apply_rules(rgba: np.ndarray, rules: list, skin_guard: dict | None = None,
     if skin_guard:
         guard = hsv_box(hsv, skin_guard, {"hue": 0.01, "sat": 0.03, "val": 0.03})
     for rule in rules:
-        w = hsv_box(hsv, rule, feather)
+        w = close_holes(hsv_box(hsv, rule, feather), int(rule.get("holeFill", hole_fill)))
         if rule.get("include"):
             w *= _rect_mask(w.shape, rule["include"])
         if rule.get("exclude"):
@@ -219,12 +241,12 @@ def texture_key_rules(recolor: dict, image_name: str) -> list:
 
 
 def prepare_texture(src: str, dst: str, size: int, *, rules=None, skin_guard=None,
-                    feather=None, non_color=False, keep_alpha=False, force=False):
+                    feather=None, non_color=False, keep_alpha=False, hole_fill=0, force=False):
     """Load src (TGA), recolor, downscale to size^2, save PNG at dst. Cached by mtime."""
     stamp = dst + ".json"
     sig = json.dumps({"src": os.path.abspath(src), "mtime": os.path.getmtime(src), "size": size,
                       "rules": rules or [], "guard": skin_guard, "feather": feather,
-                      "alpha": keep_alpha, "v": 2}, sort_keys=True)
+                      "alpha": keep_alpha, "holeFill": hole_fill, "v": 3}, sort_keys=True)
     if not force and os.path.exists(dst) and os.path.exists(stamp):
         with open(stamp) as f:
             if f.read() == sig:
@@ -232,12 +254,158 @@ def prepare_texture(src: str, dst: str, size: int, *, rules=None, skin_guard=Non
     rgba = load_rgba(src)
     mask = None
     if rules:
-        rgba, mask = apply_rules(rgba, rules, skin_guard, feather)
+        rgba, mask = apply_rules(rgba, rules, skin_guard, feather, hole_fill)
     small = downscale(rgba, size)
     save_png(small, dst, non_color=non_color, keep_alpha=keep_alpha)
     with open(stamp, "w") as f:
         f.write(sig)
     return dst, mask
+
+
+# ---------------------------------------------------------------------------
+# roughness from the Rocketbox specular maps
+# ---------------------------------------------------------------------------
+
+
+def luminance(rgb: np.ndarray) -> np.ndarray:
+    return (0.2126 * rgb[..., 0] + 0.7152 * rgb[..., 1] + 0.0722 * rgb[..., 2]).astype(np.float32)
+
+
+def _solve_k(L: np.ndarray, w: np.ndarray, target: float, lo: float, hi: float,
+             k_range=(1.0, 16.0)) -> float:
+    """k such that the w-weighted mean of clamp(1 - k*L, lo, hi) == target (bisection; the mean is
+    monotonically decreasing in k)."""
+    sw = float(w.sum())
+    if sw < 1.0:
+        return float("nan")
+    a, b = k_range
+
+    def mean(k):
+        return float((np.clip(1.0 - k * L, lo, hi) * w).sum() / sw)
+
+    if mean(a) <= target:
+        return a
+    if mean(b) >= target:
+        return b
+    for _ in range(40):
+        m = 0.5 * (a + b)
+        if mean(m) > target:
+            a = m
+        else:
+            b = m
+    return 0.5 * (a + b)
+
+
+def gaussian_blur(img: np.ndarray, sigma: float) -> np.ndarray:
+    """Separable Gaussian blur of a 2-D array (edge-clamped)."""
+    if sigma <= 0:
+        return img
+    r = max(1, int(math.ceil(sigma * 3)))
+    x = np.arange(-r, r + 1, dtype=np.float32)
+    k = np.exp(-0.5 * (x / sigma) ** 2)
+    k /= k.sum()
+    out = img.astype(np.float32)
+    for axis in (0, 1):
+        pad = [(0, 0), (0, 0)]
+        pad[axis] = (r, r)
+        p = np.pad(out, pad, mode="edge")
+        acc = np.zeros_like(out)
+        n = out.shape[axis]
+        for i, w in enumerate(k):
+            acc += w * (p[i:i + n] if axis == 0 else p[:, i:i + n])
+        out = acc
+    return out
+
+
+def roughness_from_specular(spec_rgba: np.ndarray, color_rgba: np.ndarray, *, skin_mask_box: dict,
+                            target_skin=0.5, target_cloth=0.75, lo=0.25, hi=0.95, k_range=(1.0, 16.0),
+                            single_k=False, skin_rect=None, blur_px=1.0, suit_max_val=0.3, regions=None,
+                            k_default=6.0, min_pixels=2000):
+    """roughness = clamp(1 - L*k, lo, hi) with L = specular luminance (sRGB-encoded values, as painted).
+
+    k is tuned per texture and per region so that skin averages `target_skin` and everything else
+    (suit, shirt, tie, shoes, hair) averages `target_cloth`: a soft HSV skin mask of the *colour*
+    texture blends k_skin and k_cloth per pixel, so there are no hard region edges. Within each region
+    the specular map's own variation survives (oily T-zone vs matte cheeks, satin tie vs wool jacket).
+    color_rgba should be the *recolored* colour texture: garments are then black/grey and cannot be
+    mistaken for skin (e.g. a brown jacket), and k_cloth is solved on the dark garment ("suit")
+    pixels (non-skin, HSV value < suit_max_val; all non-skin if there are too few), so the suit
+    itself averages target_cloth while shirts / ties / shoes keep their relative specular level.
+    regions: optional [{"name", "include": [[x0,y0,x1,y1]...], "target"}] -- own k inside the rects
+    (whole UV islands), for garments whose specular level is far off the rest (e.g. denim).
+    single_k (head textures): one k for the whole texture, solved on the skin inside `skin_rect`
+    (normalized, origin top-left; the face block of the atlas) -- hair, lips, eyes follow the face's k.
+    k is limited to k_range so near-black specular regions are not amplified into noise.
+    Returns (roughness HxW float32, stats dict)."""
+    L = gaussian_blur(luminance(spec_rgba[..., :3]), blur_px)  # 8-bit specular steps x k = visible noise
+    hsv = rgb_to_hsv(color_rgba[..., :3])
+    valid = (color_rgba[..., :3].max(-1) > 0.02).astype(np.float32)  # atlas padding is black
+    skin = hsv_box(hsv, skin_mask_box, {"hue": 0.015, "sat": 0.04, "val": 0.04}) * valid
+    cloth = (1.0 - skin) * valid
+    solve_skin = skin * _rect_mask(skin.shape, [skin_rect]) if skin_rect else skin
+    k_skin = _solve_k(L, solve_skin, target_skin, lo, hi, k_range) if solve_skin.sum() > min_pixels else float("nan")
+    k_cloth = float("nan")
+    suit = cloth * _smooth_range(hsv[..., 2], -1.0, suit_max_val, 0.05)
+    solve_cloth = suit if suit.sum() > min_pixels else cloth
+    if regions:  # garments with their own k do not bias the suit's k
+        solve_cloth = solve_cloth * (1.0 - _rect_mask(L.shape, [r for reg in regions for r in reg["include"]]))
+    if not single_k and solve_cloth.sum() > min_pixels:
+        k_cloth = _solve_k(L, solve_cloth, target_cloth, lo, hi, k_range)
+    if not np.isfinite(k_skin):
+        k_skin = k_cloth if np.isfinite(k_cloth) else k_default
+    if single_k or not np.isfinite(k_cloth):
+        k_cloth = k_skin
+    k = skin * k_skin + (1.0 - skin) * k_cloth
+    region_stats = {}
+    for reg in regions or []:
+        m = _rect_mask(L.shape, reg["include"]) * (1.0 - skin) * valid
+        if m.sum() > min_pixels:
+            kr = _solve_k(L, m, float(reg.get("target", target_cloth)), lo, hi, k_range)
+            k = np.where(m > 0, kr, k)
+            region_stats[reg.get("name", "region")] = round(float(kr), 3)
+    rough = np.clip(1.0 - k * L, lo, hi).astype(np.float32)
+
+    def wmean(x, w):
+        s = float(w.sum())
+        return round(float((x * w).sum() / s), 3) if s > 0 else None
+
+    stats = {"k_skin": round(float(k_skin), 3), "k_cloth": round(float(k_cloth), 3), "singleK": bool(single_k),
+             "skinMean": wmean(rough, solve_skin), "clothMean": wmean(rough, cloth), "suitMean": wmean(rough, suit),
+             "regions": region_stats,
+             "skinFraction": round(float(skin.sum() / max(valid.sum(), 1)), 3),
+             "specLuminanceMean": wmean(L, valid)}
+    return rough, stats
+
+
+def prepare_roughness(spec_path: str, color_path: str, dst: str, size: int, *, skin_mask_box: dict,
+                      params: dict | None = None, force=False):
+    """Specular TGA -> roughness PNG (grey, R=G=B=roughness, so glTF metallicRoughness.G carries it
+    and lossy WebP keeps it all in luma). Cached by mtime + parameters. Returns (dst, stats)."""
+    params = params or {}
+    stamp = dst + ".json"
+    sig = {"spec": os.path.abspath(spec_path), "mtime": os.path.getmtime(spec_path),
+           "color": os.path.abspath(color_path), "cmtime": os.path.getmtime(color_path),
+           "size": size, "mask": skin_mask_box, "params": params, "v": 3}
+    if not force and os.path.exists(dst) and os.path.exists(stamp):
+        with open(stamp) as f:
+            prev = json.load(f)
+        if prev.get("sig") == json.loads(json.dumps(sig)):
+            return dst, prev.get("stats")
+    spec = downscale(load_rgba(spec_path), size)
+    color = downscale(load_rgba(color_path), size)
+    rough, stats = roughness_from_specular(
+        spec, color, skin_mask_box=skin_mask_box,
+        target_skin=params.get("targetSkin", 0.5), target_cloth=params.get("targetCloth", 0.75),
+        lo=params.get("min", 0.25), hi=params.get("max", 0.95), k_range=tuple(params.get("kRange", (1.0, 16.0))),
+        single_k=bool(params.get("singleK", False)), skin_rect=params.get("skinRect"),
+        blur_px=float(params.get("blurPx", 1.0)), suit_max_val=float(params.get("suitMaxVal", 0.3)),
+        regions=params.get("regions"))
+    img = np.repeat(rough[..., None], 4, -1)
+    img[..., 3] = 1.0
+    save_png(img, dst, non_color=True, keep_alpha=False)
+    with open(stamp, "w") as f:
+        json.dump({"sig": sig, "stats": stats}, f)
+    return dst, stats
 
 
 # ---------------------------------------------------------------------------
@@ -266,7 +434,8 @@ def _cli():
             if not rules:
                 continue
             rgba = load_rgba(os.path.join(tex_dir, fn))
-            new, mask = apply_rules(rgba, rules, c.get("skinGuard", d.get("skinGuard")), d.get("recolorFeather"))
+            new, mask = apply_rules(rgba, rules, c.get("skinGuard", d.get("skinGuard")), d.get("recolorFeather"),
+                                    int(d.get("recolorHoleFill", 0)))
             a = downscale(rgba, 512)
             b = downscale(new, 512)
             m = downscale(np.repeat(mask[..., None], 4, -1), 512)

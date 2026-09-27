@@ -5,31 +5,122 @@
   "outputDir": "public/assets/characters",
   "cacheDir": "vendor/rocketbox/cache",
   "previewDir": "vendor/previews",
+  "previewFaces": [
+    "rocketbox_business_male_01",
+    "rocketbox_business_female_01",
+    "rocketbox_business_male_05"
+  ],
+  "twistTest": "rocketbox_business_male_01",
   "defaults": {
-    "textureSize": 1024,
-    "opacityTextureSize": 512,
+    "textureSize": 2048,
+    "opacityTextureSize": 1024,
+    "glassesTextureSize": 512,
     "imageFormat": "WEBP",
-    "imageQuality": 82,
+    "imageQuality": 88,
     "alphaCutoff": 0.4,
     "roughness": {
       "body": 0.72,
       "head": 0.55,
       "opacity": 0.88,
-      "glasses": 0.3
+      "glasses": 0.3,
+      "eyes": 0.05,
+      "mouth": 0.2
+    },
+    "roughnessMap": {
+      "enabled": true,
+      "targetSkin": 0.5,
+      "targetCloth": 0.75,
+      "min": 0.25,
+      "max": 0.95,
+      "skinMask": {
+        "hue": [
+          0.0,
+          0.11
+        ],
+        "sat": [
+          0.2,
+          0.85
+        ],
+        "val": [
+          0.2,
+          1.0
+        ]
+      },
+      "kRange": [
+        1.0,
+        16.0
+      ],
+      "head": {
+        "singleK": true,
+        "skinRect": [
+          0.33,
+          0.18,
+          0.67,
+          0.6
+        ]
+      },
+      "body": {
+        "singleK": false
+      },
+      "blurPx": 1.0,
+      "suitMaxVal": 0.3,
+      "$comment": "roughness = clamp(1 - k * specular_luminance, min, max), on the specular luminance blurred by blurPx texels. Masks use the recolored colour texture. head: one k per texture, solved so the face skin (skinMask inside skinRect, normalized top-left) averages targetSkin. body: k_skin solved so skin (hands, legs) averages targetSkin, k_cloth so the dark garments (non-skin, HSV value < suitMaxVal = the suit) average targetCloth; blended per pixel by the soft skinMask. k is limited to kRange. Per character: roughnessMap.body.regions = [{name, include rects, target}] gives a garment its own k."
+    },
+    "twistBones": {
+      "enabled": true,
+      "fraction": 0.55,
+      "smoothstep": [
+        0.15,
+        1.0
+      ],
+      "share": 0.85
+    },
+    "splitMaterials": {
+      "enabled": true,
+      "eyes": {
+        "enabled": true
+      },
+      "mouth": {
+        "enabled": true,
+        "uvRect": [
+          0.0,
+          0.58,
+          0.235,
+          1.0
+        ],
+        "belowEyes_m": 0.03,
+        "radius_m": 0.075
+      },
+      "$comment": "eyes: head faces rigidly weighted (>=0.5) to Bip01 LEye/REye (the separate eyeball meshes). mouth: head faces with UV centroid in uvRect (normalized, top-left), > belowEyes_m below the eyes and within radius_m of the lip bones. Materials are named <id>_eyes / <id>_mouth, share the head textures, constant roughness from defaults.roughness."
     },
     "lods": [
       {
         "name": "LOD0",
-        "ratio": 1.0
+        "method": "subdivide",
+        "levels": 1,
+        "quadify": true,
+        "quadifyAngle": 40,
+        "uvSmooth": "PRESERVE_BOUNDARIES",
+        "boundarySmooth": "PRESERVE_CORNERS",
+        "limitSurface": false,
+        "maxTriangles": 32000,
+        "maxError": 0.004,
+        "creaseMaterialBorders": [
+          "mouth"
+        ]
       },
       {
         "name": "LOD1",
+        "method": "copy"
+      },
+      {
+        "name": "LOD2",
         "ratio": 0.5,
         "method": "meshopt",
         "maxError": 0.02
       },
       {
-        "name": "LOD2",
+        "name": "LOD3",
         "ratio": 0.22,
         "method": "meshopt",
         "maxError": 0.06
@@ -54,6 +145,7 @@
       "sat": 0.04,
       "val": 0.04
     },
+    "recolorHoleFill": 2,
     "doubleSidedAlpha": false
   },
   "characters": [
@@ -459,6 +551,252 @@
       "enabled": true,
       "notes": "Dark pinstripe trouser suit. No recolor needed.",
       "recolor": {}
+    },
+    {
+      "id": "rocketbox_business_male_05",
+      "name": "Business_Male_05",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_05",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Charcoal plaid suit darkened to black; purple shirt recolored to white, dark tie to black.",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "shirt_purple_to_white",
+            "hue": [
+              0.68,
+              0.95
+            ],
+            "sat": [
+              0.12,
+              1.0
+            ],
+            "val": [
+              0.25,
+              1.0
+            ],
+            "satScale": 0.04,
+            "valScale": 1.3,
+            "valMax": 0.9
+          },
+          {
+            "name": "suit_tie",
+            "sat": [
+              0.0,
+              0.3
+            ],
+            "val": [
+              0.0,
+              0.42
+            ],
+            "satScale": 0.3,
+            "valScale": 0.5,
+            "valMax": 0.12
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_male_06",
+      "name": "Business_Male_06",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_06",
+      "gender": "male",
+      "enabled": true,
+      "notes": "White shirt recolored to black (all-black shirt and trousers, no jacket).",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "shirt",
+            "sat": [
+              0.0,
+              0.2
+            ],
+            "val": [
+              0.42,
+              1.0
+            ],
+            "satScale": 0.3,
+            "valScale": 0.14,
+            "valMax": 0.14
+          },
+          {
+            "name": "trousers",
+            "sat": [
+              0.0,
+              0.25
+            ],
+            "val": [
+              0.0,
+              0.42
+            ],
+            "satScale": 0.4,
+            "valScale": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "rocketbox_business_male_07",
+      "name": "Business_Male_07",
+      "sourceDir": "Assets/Avatars/Professions/Business_Male_07",
+      "gender": "male",
+      "enabled": true,
+      "notes": "Older, bald. White shirt, striped tie and blue jeans recolored to black (all black, no jacket); the denim gets its own roughness k (target 0.8, its specular map is much brighter than the shirt's).",
+      "recolor": {
+        "body_color": [
+          {
+            "name": "jeans",
+            "hue": [
+              0.45,
+              0.72
+            ],
+            "sat": [
+              0.05,
+              1.0
+            ],
+            "val": [
+              0.0,
+              1.0
+            ],
+            "satScale": 0.05,
+            "valScale": 0.22,
+            "valMax": 0.1
+          },
+          {
+            "name": "shirt_tie",
+            "sat": [
+              0.0,
+              0.2
+            ],
+            "val": [
+              0.3,
+              1.0
+            ],
+            "satScale": 0.3,
+            "valScale": 0.14,
+            "valMax": 0.14
+          },
+          {
+            "name": "darks",
+            "sat": [
+              0.0,
+              0.3
+            ],
+            "val": [
+              0.0,
+              0.3
+            ],
+            "satScale": 0.4,
+            "valScale": 0.6
+          }
+        ]
+      },
+      "roughnessMap": {
+        "body": {
+          "regions": [
+            {
+              "name": "jeans",
+              "include": [
+                [
+                  0.0,
+                  0.0,
+                  0.31,
+                  0.44
+                ],
+                [
+                  0.69,
+                  0.0,
+                  1.0,
+                  0.44
+                ]
+              ],
+              "target": 0.8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "rocketbox_pilot_female_02",
+      "name": "Pilot_Female_02",
+      "sourceDir": "Assets/Avatars/Professions/Pilot_Female_02",
+      "gender": "female",
+      "enabled": true,
+      "notes": "Pilot cap removed (hat material deleted; the hair bun is modelled underneath). White short-sleeve blouse and gold epaulettes recolored to black; black trousers kept. The trousers get their own roughness k (target 0.8; their specular map made them read as leather).",
+      "removeMaterials": [
+        "hat"
+      ],
+      "recolor": {
+        "body_color": [
+          {
+            "name": "blouse",
+            "sat": [
+              0.0,
+              0.2
+            ],
+            "val": [
+              0.4,
+              1.0
+            ],
+            "satScale": 0.3,
+            "valScale": 0.14,
+            "valMax": 0.14
+          },
+          {
+            "name": "epaulettes",
+            "sat": [
+              0.0,
+              1.0
+            ],
+            "val": [
+              0.0,
+              1.0
+            ],
+            "satScale": 0.1,
+            "valScale": 0.3,
+            "valMax": 0.12,
+            "ignoreSkinGuard": true,
+            "include": [
+              [
+                0.295,
+                0.69,
+                0.365,
+                0.83
+              ],
+              [
+                0.635,
+                0.69,
+                0.705,
+                0.83
+              ]
+            ]
+          }
+        ]
+      },
+      "roughnessMap": {
+        "body": {
+          "regions": [
+            {
+              "name": "trousers",
+              "include": [
+                [
+                  0.0,
+                  0.52,
+                  0.3,
+                  1.0
+                ],
+                [
+                  0.7,
+                  0.52,
+                  1.0,
+                  1.0
+                ]
+              ],
+              "target": 0.8
+            }
+          ]
+        }
+      }
     }
   ]
 }

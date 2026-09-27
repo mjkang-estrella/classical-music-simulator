@@ -3,11 +3,16 @@
 #
 #   tools/gltf/optimize-characters.sh [file.glb ...]      (default: public/assets/characters/*.glb)
 #
-# 1. LOD generation: nodes LOD1/LOD2 arrive from Blender as full copies of LOD0. Each primitive is
-#    simplified in place with meshoptimizer's simplifyWithAttributes (normals + UVs weighted,
-#    RegularizeLight for skinning). Only existing vertices are kept, so normals, UVs and skin
-#    weights stay exact. Vertices shared with another primitive (e.g. the head/body neck seam) are
-#    locked so no cracks open. Targets come from tools/blender/characters.json -> defaults.lods.
+# 1. LOD generation (specs: tools/blender/characters.json -> defaults.lods):
+#    - method "meshopt" (LOD2/LOD3): the nodes arrive from Blender as full copies of the original
+#      hipoly mesh (= LOD1); each primitive is simplified to `ratio` with meshoptimizer.
+#    - method "subdivide" (LOD0, Catmull-Clark in Blender): if it exceeds `maxTriangles` it is
+#      trimmed to that budget with meshoptimizer (flattest regions first, error <= maxError, relaxed
+#      x2/x4 if the budget is not met).
+#    - method "copy" (LOD1): untouched.
+#    simplifyWithAttributes weights normals + UVs and uses RegularizeLight for skinning. Only existing
+#    vertices are kept, so normals, UVs and skin weights stay exact. Vertices shared with another
+#    primitive (e.g. eyes/mouth borders, the head/body neck seam) are locked so no cracks open.
 #    Idempotent: simplified meshes are tagged extras.lodSimplified and skipped on re-runs.
 # 2. Optional (COMPRESS=1): EXT_meshopt_compression + quantization. Off by default (files are
 #    ~1 MB already and it would require MeshoptDecoder on the loader).
@@ -46,7 +51,7 @@ function skinSignature(doc) {
   return skins.map((s) => ({ joints: s.listJoints().length, ibm: s.getInverseBindMatrices()?.getCount() ?? 0 }));
 }
 
-function simplifyMesh(mesh, spec, refTris, logs) {
+function simplifyMesh(mesh, spec, refTris, logs, ratio = spec.ratio, maxError = spec.maxError ?? 0.02, compact = true) {
   const prims = mesh.listPrimitives();
   // positions of every primitive, to lock vertices on inter-primitive seams
   const keysByPrim = prims.map((p) => {
@@ -75,14 +80,14 @@ function simplifyMesh(mesh, spec, refTris, logs) {
       }
     }
     const idx = new Uint32Array(prim.getIndices().getArray());
-    const target = Math.floor((spec.ratio * idx.length) / 3) * 3;
+    const target = Math.floor((ratio * idx.length) / 3) * 3;
     const [dst, err] = MeshoptSimplifier.simplifyWithAttributes(
       idx, new Float32Array(pos), 3, attrs, stride, [0.5, 0.5, 0.5, 1.0, 1.0], lock,
-      target, spec.maxError ?? 0.02, ['RegularizeLight'],
+      target, maxError, ['RegularizeLight'],
     );
     const indices = prim.getIndices().clone().setArray(dst.length / 3 <= 65535 && vcount <= 65535 ? new Uint16Array(dst) : dst);
     prim.setIndices(indices);
-    compactPrimitive(prim);
+    if (compact) compactPrimitive(prim);
     logs.push(`${prim.getMaterial()?.getName() ?? '?'} ${idx.length / 3}->${dst.length / 3} (err ${err.toFixed(4)}, locked ${locked})`);
   }
 }
@@ -92,20 +97,39 @@ for (const file of files) {
   const doc = await io.read(file);
   const before = skinSignature(doc);
   const nodes = doc.getRoot().listNodes();
-  const lod0 = nodes.find((n) => n.getName() === 'LOD0');
-  const refTris = lod0 ? triCount(lod0.getMesh()) : 0;
+  const meshNodes = nodes.filter((n) => n.getMesh());
+  if (new Set(meshNodes.map((n) => n.getMesh())).size !== meshNodes.length) throw new Error(`${file}: LOD nodes share a mesh`);
+  const refTris = 0;
   const out = [];
-  for (const node of nodes) {
+  for (const node of meshNodes) {
     const spec = specs.get(node.getName());
     const mesh = node.getMesh();
-    if (!spec || !mesh || spec.method !== 'meshopt' || node === lod0) continue;
-    if (mesh === lod0?.getMesh()) throw new Error(`${file}: ${node.getName()} shares its mesh with LOD0`);
+    if (!spec) continue;
     const tris = triCount(mesh);
     if (mesh.getExtras()?.lodSimplified) { out.push(`${node.getName()}: already simplified (${tris} tris), skipped`); continue; }
-    const logs = [];
-    simplifyMesh(mesh, spec, refTris, logs);
-    mesh.setExtras({ ...mesh.getExtras(), lodSimplified: { ratio: spec.ratio, maxError: spec.maxError ?? 0.02 } });
-    out.push(`${node.getName()}: ${tris} -> ${triCount(mesh)} tris [${logs.join('; ')}]`);
+    if (spec.method === 'meshopt') {
+      const logs = [];
+      simplifyMesh(mesh, spec, refTris, logs);
+      mesh.setExtras({ ...mesh.getExtras(), lodSimplified: { ratio: spec.ratio, maxError: spec.maxError ?? 0.02 } });
+      out.push(`${node.getName()}: ${tris} -> ${triCount(mesh)} tris [${logs.join('; ')}]`);
+    } else if (spec.method === 'subdivide' && spec.maxTriangles && tris > spec.maxTriangles) {
+      // trim the subdivided close-up LOD to its budget; relax the error bound until it fits
+      let err = spec.maxError ?? 0.004;
+      let logs = [];
+      const backup = mesh.listPrimitives().map((p) => p.getIndices().getArray().slice());
+      for (let attempt = 0; attempt < 3; attempt++) {
+        logs = [];
+        mesh.listPrimitives().forEach((p, i) => p.setIndices(p.getIndices().clone().setArray(backup[i].slice())));
+        simplifyMesh(mesh, spec, refTris, logs, (spec.maxTriangles - 64) / tris, err, false);
+        if (triCount(mesh) <= spec.maxTriangles) break;
+        err *= 2;
+      }
+      for (const p of mesh.listPrimitives()) compactPrimitive(p);
+      mesh.setExtras({ ...mesh.getExtras(), lodSimplified: { maxTriangles: spec.maxTriangles, maxError: err } });
+      out.push(`${node.getName()}: ${tris} -> ${triCount(mesh)} tris (budget ${spec.maxTriangles}, err<=${err}) [${logs.join('; ')}]`);
+    } else {
+      out.push(`${node.getName()}: ${tris} tris (${spec.method ?? 'copy'}, unchanged)`);
+    }
   }
   await doc.transform(prune({ keepAttributes: true, keepLeaves: true }));
   // quantizationVolume 'scene': one dequantization transform for all LODs, so they keep sharing one skin

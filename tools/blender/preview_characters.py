@@ -5,8 +5,13 @@ actual deliverable, not the Blender scene that produced it).
   tools/blender/run.sh tools/blender/preview_characters.py -- [--cast tools/blender/characters.json] [--id <id> ...]
 
 Per character: vendor/previews/<id>.png with panels
-  LOD0 front | LOD0 back-3/4 | LOD1 front | LOD2 front | face close-up
+  LOD0 front | LOD0 back-3/4 | LOD1 front | LOD2 front | LOD3 front | face close-up
 plus vendor/previews/cast_lineup.png with every character's LOD0 side by side (front, same scale).
+
+  --faces <id>[,<id>...]        vendor/previews/face_<id>.png: LOD0 perspective close-ups (3/4 + profile)
+  --face-compare <id>[,...]     vendor/previews/face_compare_<id>.png: LOD1 (original hipoly) vs LOD0
+                                (subdivided), textured 3/4 view + untextured clay profile / 3/4
+  --only-extra                  skip the per-character sheets and the lineup
 """
 from __future__ import annotations
 
@@ -112,8 +117,10 @@ def preview_one(glb, out_png, tmp):
     aspect = H / W
     height = 1.85
     panels = []
-    # LOD0 front, back-3/4, LOD1, LOD2
-    for label, keep, rot in (("lod0", ["LOD0"], 0), ("lod0_back", ["LOD0"], 150), ("lod1", ["LOD1"], 0), ("lod2", ["LOD2"], 0)):
+    # LOD0 front, back-3/4, LOD1..LOD3
+    views = [("lod0", ["LOD0"], 0), ("lod0_back", ["LOD0"], 150)]
+    views += [(n.lower(), [n], 0) for n in sorted(meshes) if n.startswith("LOD") and n != "LOD0"]
+    for label, keep, rot in views:
         show_only(meshes, keep)
         root.rotation_mode = "XYZ"
         root.rotation_euler = (root.rotation_euler[0], root.rotation_euler[1], math.radians(rot))
@@ -125,6 +132,72 @@ def preview_one(glb, out_png, tmp):
     frame(cam, (head.x, 0, head.z + 0.02), 0.34 / aspect, 0.42, W / H)
     panels.append(render_to(os.path.join(tmp, "face.png"), W, H))
     sheet = np.concatenate(panels, axis=1)
+    sheet[..., 3] = 1.0
+    ra.save_png(sheet, out_png)
+    print("wrote", out_png, flush=True)
+
+
+def face_target(arm):
+    b = arm.data.bones
+    eyes = (b["Bip01 LEye"].head_local + b["Bip01 REye"].head_local) / 2
+    return arm.matrix_world @ (eyes + Vector((0.0, 0.0, -0.035)))
+
+
+def persp(cam, target, azimuth_deg, dist=0.62, elev_deg=4.0, lens=85):
+    """Camera on a circle around `target`; azimuth 0 = straight in front (character faces -Y)."""
+    cam.data.type = "PERSP"
+    cam.data.lens = lens
+    a, e = math.radians(azimuth_deg), math.radians(elev_deg)
+    d = Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), math.sin(e)))
+    cam.location = target + d * dist
+    cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
+
+
+def clay(on: bool):
+    sc = bpy.context.scene
+    if on:
+        sc.render.engine = "BLENDER_WORKBENCH"
+        sh = sc.display.shading
+        sh.light = "STUDIO"
+        sh.color_type = "SINGLE"
+        sh.single_color = (0.72, 0.66, 0.62)
+        sh.show_cavity = False
+        sh.show_specular_highlight = True
+    else:
+        engines = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
+        sc.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_WORKBENCH"
+
+
+def face_sheet(glb, out_png, tmp, compare=False):
+    """compare=False: LOD0 textured 3/4 | profile.  compare=True: rows = textured 3/4, clay 3/4,
+    clay profile; columns = LOD1 (original) | LOD0 (subdivided)."""
+    sc, cam = setup_scene()
+    try:
+        sc.eevee.taa_render_samples = 48
+    except Exception:
+        pass
+    root, arm, meshes, _ = import_glb(glb)
+    tgt = face_target(arm)
+    W, H = 640, 760
+    if not compare:
+        show_only(meshes, ["LOD0"])
+        cols = []
+        for az in (-32, 90):
+            persp(cam, tgt, az)
+            cols.append(render_to(os.path.join(tmp, f"face_{az}.png"), W, H))
+        sheet = np.concatenate(cols, axis=1)
+    else:
+        rows = []
+        for mode, az in (("tex", -32), ("clay", -32), ("clay", 90)):
+            clay(mode == "clay")
+            cols = []
+            for lod in ("LOD1", "LOD0"):
+                show_only(meshes, [lod])
+                persp(cam, tgt, az)
+                cols.append(render_to(os.path.join(tmp, f"cmp_{mode}_{az}_{lod}.png"), W, H))
+            rows.append(np.concatenate(cols, axis=1))
+        clay(False)
+        sheet = np.concatenate(rows, axis=0)
     sheet[..., 3] = 1.0
     ra.save_png(sheet, out_png)
     print("wrote", out_png, flush=True)
@@ -157,6 +230,9 @@ def main():
     ap.add_argument("--no-lineup", action="store_true")
     ap.add_argument("--glb", default=None, help="preview a single GLB file instead of the cast")
     ap.add_argument("--out", default=None, help="output PNG for --glb")
+    ap.add_argument("--faces", default=None, help="comma-separated ids for face close-ups")
+    ap.add_argument("--face-compare", default=None, help="comma-separated ids for LOD1 vs LOD0 head comparisons")
+    ap.add_argument("--only-extra", action="store_true", help="only --faces / --face-compare")
     args = ap.parse_args(argv)
     if args.glb:
         tmp = os.path.join(os.path.dirname(os.path.abspath(args.out)), "_tmp")
@@ -168,9 +244,16 @@ def main():
     out_dir = os.path.join(ROOT, cast["previewDir"])
     tmp = os.path.join(out_dir, "_tmp")
     os.makedirs(tmp, exist_ok=True)
+    glb_of = lambda cid: os.path.join(ROOT, cast["outputDir"], f"{cid}.glb")
+    for cid in filter(None, (args.faces or "").split(",")):
+        face_sheet(glb_of(cid), os.path.join(out_dir, f"face_{cid}.png"), tmp)
+    for cid in filter(None, (args.face_compare or "").split(",")):
+        face_sheet(glb_of(cid), os.path.join(out_dir, f"face_compare_{cid}.png"), tmp, compare=True)
+    if args.only_extra:
+        return
     glbs = []
     for c in chars:
-        glb = os.path.join(ROOT, cast["outputDir"], f"{c['id']}.glb")
+        glb = glb_of(c["id"])
         if not os.path.exists(glb):
             print("missing", glb)
             continue

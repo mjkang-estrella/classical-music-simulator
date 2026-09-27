@@ -7,25 +7,122 @@
     "license": "MIT",
     "gender": "male",
     "height_m": 1.806,
-    "bytes": 856956,
+    "bytes": 3718948,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 7435,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31928,
+        "vertices": 17857,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 3892,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 7435,
+        "vertices": 4710,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 1864,
-        "bones": 80,
-        "weightedBones": 73
+        "triangles": 4031,
+        "vertices": 2828,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2001,
+        "vertices": 1616,
+        "bones": 82,
+        "weightedBones": 75,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m005_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m005_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m005_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_male_01_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_01_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m005_body_normal",
+        "size": "2048x2048",
+        "bytes": 255708
+      },
+      {
+        "name": "m005_body_color",
+        "size": "2048x2048",
+        "bytes": 176690
+      },
+      {
+        "name": "m005_body_roughness",
+        "size": "2048x2048",
+        "bytes": 137672
+      },
+      {
+        "name": "m005_head_normal",
+        "size": "2048x2048",
+        "bytes": 382612
+      },
+      {
+        "name": "m005_head_color",
+        "size": "2048x2048",
+        "bytes": 382046
+      },
+      {
+        "name": "m005_head_roughness",
+        "size": "2048x2048",
+        "bytes": 343094
+      },
+      {
+        "name": "m005_opacity_color",
+        "size": "1024x1024",
+        "bytes": 321672
       }
     ],
     "rig": "bip01",
@@ -76,6 +173,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -95,6 +193,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -289,10 +388,20 @@
           0,
           1.656,
           0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
         ]
       }
     },
-    "notes": "Black suit, white shirt; red tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Black suit, white shirt; red tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_male_02",
@@ -301,26 +410,123 @@
     "sourceAvatar": "Business_Male_02",
     "license": "MIT",
     "gender": "male",
-    "height_m": 1.823,
-    "bytes": 848152,
+    "height_m": 1.822,
+    "bytes": 3779832,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 7448,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31930,
+        "vertices": 17728,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 3826,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 7448,
+        "vertices": 4641,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 1782,
-        "bones": 80,
-        "weightedBones": 73
+        "triangles": 3956,
+        "vertices": 2711,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1908,
+        "vertices": 1496,
+        "bones": 82,
+        "weightedBones": 75,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m008_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m008_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m008_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_male_02_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_02_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m008_body_normal",
+        "size": "2048x2048",
+        "bytes": 288436
+      },
+      {
+        "name": "m008_body_color",
+        "size": "2048x2048",
+        "bytes": 111908
+      },
+      {
+        "name": "m008_body_roughness",
+        "size": "2048x2048",
+        "bytes": 144584
+      },
+      {
+        "name": "m008_head_normal",
+        "size": "2048x2048",
+        "bytes": 616224
+      },
+      {
+        "name": "m008_head_color",
+        "size": "2048x2048",
+        "bytes": 395312
+      },
+      {
+        "name": "m008_head_roughness",
+        "size": "2048x2048",
+        "bytes": 337218
+      },
+      {
+        "name": "m008_opacity_color",
+        "size": "1024x1024",
+        "bytes": 190188
       }
     ],
     "rig": "bip01",
@@ -371,6 +577,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -390,6 +597,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -584,10 +792,20 @@
           0,
           1.656,
           0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
         ]
       }
     },
-    "notes": "Navy suit and tie darkened/desaturated to near-black (tie pattern flattened); white shirt kept. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Navy suit and tie darkened/desaturated to near-black (tie pattern flattened); white shirt kept. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_male_03",
@@ -596,26 +814,123 @@
     "sourceAvatar": "Business_Male_03",
     "license": "MIT",
     "gender": "male",
-    "height_m": 1.819,
-    "bytes": 927912,
+    "height_m": 1.818,
+    "bytes": 4228656,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 7810,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31932,
+        "vertices": 17936,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 4054,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 7810,
+        "vertices": 4937,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 1885,
-        "bones": 80,
-        "weightedBones": 74
+        "triangles": 4170,
+        "vertices": 2926,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2006,
+        "vertices": 1613,
+        "bones": 82,
+        "weightedBones": 76,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m020_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m020_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m020_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_male_03_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_03_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m020_body_normal",
+        "size": "2048x2048",
+        "bytes": 251712
+      },
+      {
+        "name": "m020_body_color",
+        "size": "2048x2048",
+        "bytes": 147450
+      },
+      {
+        "name": "m020_body_roughness",
+        "size": "2048x2048",
+        "bytes": 201800
+      },
+      {
+        "name": "m020_head_normal",
+        "size": "2048x2048",
+        "bytes": 610500
+      },
+      {
+        "name": "m020_head_color",
+        "size": "2048x2048",
+        "bytes": 562080
+      },
+      {
+        "name": "m020_head_roughness",
+        "size": "2048x2048",
+        "bytes": 457430
+      },
+      {
+        "name": "m020_opacity_color",
+        "size": "1024x1024",
+        "bytes": 254232
       }
     ],
     "rig": "bip01",
@@ -666,6 +981,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -685,6 +1001,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -879,10 +1196,20 @@
           0,
           1.656,
           0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
         ]
       }
     },
-    "notes": "Charcoal suit darkened toward black; teal tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Charcoal suit darkened toward black; teal tie recolored to black. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_male_04",
@@ -891,26 +1218,112 @@
     "sourceAvatar": "Business_Male_04",
     "license": "MIT",
     "gender": "male",
-    "height_m": 1.801,
-    "bytes": 780364,
+    "height_m": 1.8,
+    "bytes": 4178412,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 7326,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31934,
+        "vertices": 17437,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 3662,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 7326,
+        "vertices": 4416,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 1610,
-        "bones": 80,
-        "weightedBones": 72
+        "triangles": 3786,
+        "vertices": 2469,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1736,
+        "vertices": 1275,
+        "bones": 82,
+        "weightedBones": 74,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m015_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m015_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "rocketbox_business_male_04_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_04_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m015_body_normal",
+        "size": "2048x2048",
+        "bytes": 871208
+      },
+      {
+        "name": "m015_body_color",
+        "size": "2048x2048",
+        "bytes": 108940
+      },
+      {
+        "name": "m015_body_roughness",
+        "size": "2048x2048",
+        "bytes": 116188
+      },
+      {
+        "name": "m015_head_normal",
+        "size": "2048x2048",
+        "bytes": 454278
+      },
+      {
+        "name": "m015_head_color",
+        "size": "2048x2048",
+        "bytes": 413838
+      },
+      {
+        "name": "m015_head_roughness",
+        "size": "2048x2048",
+        "bytes": 575424
       }
     ],
     "rig": "bip01",
@@ -961,6 +1374,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -980,6 +1394,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -1174,10 +1589,20 @@
           0,
           1.656,
           0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
         ]
       }
     },
-    "notes": "Grey waistcoat, shirt and trousers darkened to black (all-black, no jacket). Bald, no hair cards. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Grey waistcoat, shirt and trousers darkened to black (all-black, no jacket). Bald, no hair cards. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_female_01",
@@ -1186,26 +1611,123 @@
     "sourceAvatar": "Business_Female_01",
     "license": "MIT",
     "gender": "female",
-    "height_m": 1.74,
-    "bytes": 1067568,
+    "height_m": 1.739,
+    "bytes": 4533524,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 8966,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31932,
+        "vertices": 18866,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 4738,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 8966,
+        "vertices": 6117,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 2310,
-        "bones": 80,
-        "weightedBones": 72
+        "triangles": 4862,
+        "vertices": 3747,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2442,
+        "vertices": 2194,
+        "bones": 82,
+        "weightedBones": 75,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "f014_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f014_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f014_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_female_01_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_female_01_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "f014_body_normal",
+        "size": "2048x2048",
+        "bytes": 372778
+      },
+      {
+        "name": "f014_body_color",
+        "size": "2048x2048",
+        "bytes": 308274
+      },
+      {
+        "name": "f014_body_roughness",
+        "size": "2048x2048",
+        "bytes": 172244
+      },
+      {
+        "name": "f014_head_normal",
+        "size": "2048x2048",
+        "bytes": 513720
+      },
+      {
+        "name": "f014_head_color",
+        "size": "2048x2048",
+        "bytes": 514318
+      },
+      {
+        "name": "f014_head_roughness",
+        "size": "2048x2048",
+        "bytes": 405726
+      },
+      {
+        "name": "f014_opacity_color",
+        "size": "1024x1024",
+        "bytes": 306680
       }
     ],
     "rig": "bip01",
@@ -1256,6 +1778,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -1275,6 +1798,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -1469,10 +1993,20 @@
           0,
           1.585,
           0.131
+        ],
+        "Bip01_L_ForeTwist": [
+          0.45,
+          1.13,
+          0.051
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.45,
+          1.13,
+          0.051
         ]
       }
     },
-    "notes": "Black trouser suit, white shirt. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Black trouser suit, white shirt. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_female_02",
@@ -1481,26 +2015,139 @@
     "sourceAvatar": "Business_Female_02",
     "license": "MIT",
     "gender": "female",
-    "height_m": 1.729,
-    "bytes": 1207240,
+    "height_m": 1.728,
+    "bytes": 5405640,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 8640,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31956,
+        "vertices": 18649,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 4607,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 8640,
+        "vertices": 5801,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 2337,
-        "bones": 80,
-        "weightedBones": 72
+        "triangles": 4726,
+        "vertices": 3518,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2481,
+        "vertices": 2095,
+        "bones": 82,
+        "weightedBones": 74,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "f015_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f015_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f015_glasses",
+        "part": "glasses",
+        "alphaMode": "MASK",
+        "roughness": 0.3
+      },
+      {
+        "name": "f015_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_female_02_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_female_02_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "f015_body_normal",
+        "size": "2048x2048",
+        "bytes": 727512
+      },
+      {
+        "name": "f015_body_color",
+        "size": "2048x2048",
+        "bytes": 233484
+      },
+      {
+        "name": "f015_body_roughness",
+        "size": "2048x2048",
+        "bytes": 318928
+      },
+      {
+        "name": "f015_head_normal",
+        "size": "2048x2048",
+        "bytes": 440740
+      },
+      {
+        "name": "f015_head_color",
+        "size": "2048x2048",
+        "bytes": 796422
+      },
+      {
+        "name": "f015_head_roughness",
+        "size": "2048x2048",
+        "bytes": 426440
+      },
+      {
+        "name": "f015_glasses_opacity_normal",
+        "size": "512x512",
+        "bytes": 3186
+      },
+      {
+        "name": "f015_glasses_opacity_color",
+        "size": "512x512",
+        "bytes": 19714
+      },
+      {
+        "name": "f015_opacity_color",
+        "size": "1024x1024",
+        "bytes": 542572
       }
     ],
     "rig": "bip01",
@@ -1551,6 +2198,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -1570,6 +2218,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -1764,10 +2413,20 @@
           0,
           1.584,
           0.131
+        ],
+        "Bip01_L_ForeTwist": [
+          0.45,
+          1.129,
+          0.051
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.45,
+          1.129,
+          0.051
         ]
       }
     },
-    "notes": "Burgundy jacket, brown trousers and grey turtleneck recolored to black. Blonde, glasses (alpha-clipped). LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Burgundy jacket, brown trousers and grey turtleneck recolored to black. Blonde, glasses (alpha-clipped). LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_female_03",
@@ -1776,26 +2435,123 @@
     "sourceAvatar": "Business_Female_03",
     "license": "MIT",
     "gender": "female",
-    "height_m": 1.743,
-    "bytes": 981236,
+    "height_m": 1.742,
+    "bytes": 3808548,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 8438,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31976,
+        "vertices": 18898,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 4415,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 8438,
+        "vertices": 5806,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 2083,
-        "bones": 80,
-        "weightedBones": 74
+        "triangles": 4545,
+        "vertices": 3509,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2215,
+        "vertices": 1983,
+        "bones": 82,
+        "weightedBones": 76,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "f016_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f016_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f016_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_female_03_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_female_03_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "f016_body_normal",
+        "size": "2048x2048",
+        "bytes": 230308
+      },
+      {
+        "name": "f016_body_color",
+        "size": "2048x2048",
+        "bytes": 107656
+      },
+      {
+        "name": "f016_body_roughness",
+        "size": "2048x2048",
+        "bytes": 124034
+      },
+      {
+        "name": "f016_head_normal",
+        "size": "2048x2048",
+        "bytes": 453388
+      },
+      {
+        "name": "f016_head_color",
+        "size": "2048x2048",
+        "bytes": 368478
+      },
+      {
+        "name": "f016_head_roughness",
+        "size": "2048x2048",
+        "bytes": 340082
+      },
+      {
+        "name": "f016_opacity_color",
+        "size": "1024x1024",
+        "bytes": 288874
       }
     ],
     "rig": "bip01",
@@ -1846,6 +2602,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -1865,6 +2622,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -2059,10 +2817,20 @@
           0,
           1.585,
           0.131
+        ],
+        "Bip01_L_ForeTwist": [
+          0.45,
+          1.13,
+          0.051
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.45,
+          1.13,
+          0.051
         ]
       }
     },
-    "notes": "Brown jacket, blouse and skirt recolored to black (hands, legs and neckline skin excluded by region). LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Brown jacket, blouse and skirt recolored to black (hands, legs and neckline skin excluded by region). LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   },
   {
     "id": "rocketbox_business_female_04",
@@ -2071,26 +2839,123 @@
     "sourceAvatar": "Business_Female_04",
     "license": "MIT",
     "gender": "female",
-    "height_m": 1.733,
-    "bytes": 911380,
+    "height_m": 1.731,
+    "bytes": 3547956,
     "lods": [
       {
         "name": "LOD0",
-        "triangles": 8270,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 31932,
+        "vertices": 18119,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
       },
       {
         "name": "LOD1",
-        "triangles": 4282,
-        "bones": 80,
-        "weightedBones": 80
+        "triangles": 8270,
+        "vertices": 5284,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
       },
       {
         "name": "LOD2",
-        "triangles": 2051,
-        "bones": 80,
-        "weightedBones": 73
+        "triangles": 4418,
+        "vertices": 3073,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 2180,
+        "vertices": 1711,
+        "bones": 82,
+        "weightedBones": 77,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "f020_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f020_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f020_opacity",
+        "part": "hair",
+        "alphaMode": "MASK",
+        "roughness": 0.88
+      },
+      {
+        "name": "rocketbox_business_female_04_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_female_04_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "f020_body_normal",
+        "size": "2048x2048",
+        "bytes": 233090
+      },
+      {
+        "name": "f020_body_color",
+        "size": "2048x2048",
+        "bytes": 230160
+      },
+      {
+        "name": "f020_body_roughness",
+        "size": "2048x2048",
+        "bytes": 84810
+      },
+      {
+        "name": "f020_head_normal",
+        "size": "2048x2048",
+        "bytes": 337604
+      },
+      {
+        "name": "f020_head_color",
+        "size": "2048x2048",
+        "bytes": 400184
+      },
+      {
+        "name": "f020_head_roughness",
+        "size": "2048x2048",
+        "bytes": 327428
+      },
+      {
+        "name": "f020_opacity_color",
+        "size": "1024x1024",
+        "bytes": 145556
       }
     ],
     "rig": "bip01",
@@ -2141,6 +3006,7 @@
       "Bip01_L_Clavicle",
       "Bip01_L_UpperArm",
       "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
       "Bip01_L_Hand",
       "Bip01_L_Finger0",
       "Bip01_L_Finger01",
@@ -2160,6 +3026,7 @@
       "Bip01_R_Clavicle",
       "Bip01_R_UpperArm",
       "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
       "Bip01_R_Hand",
       "Bip01_R_Finger0",
       "Bip01_R_Finger01",
@@ -2354,9 +3221,1591 @@
           0,
           1.588,
           0.131
+        ],
+        "Bip01_L_ForeTwist": [
+          0.45,
+          1.133,
+          0.051
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.45,
+          1.133,
+          0.051
         ]
       }
     },
-    "notes": "Dark pinstripe trouser suit. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh; LOD1/LOD2 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+    "notes": "Dark pinstripe trouser suit. No recolor needed. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_05",
+    "file": "rocketbox_business_male_05.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_05",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.8,
+    "bytes": 4240456,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 31556,
+        "vertices": 17464,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
+      },
+      {
+        "name": "LOD1",
+        "triangles": 7164,
+        "vertices": 4450,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
+      },
+      {
+        "name": "LOD2",
+        "triangles": 3686,
+        "vertices": 2510,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1694,
+        "vertices": 1311,
+        "bones": 82,
+        "weightedBones": 76,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m016_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m016_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "rocketbox_business_male_05_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_05_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m016_body_normal",
+        "size": "2048x2048",
+        "bytes": 610382
+      },
+      {
+        "name": "m016_body_color",
+        "size": "2048x2048",
+        "bytes": 127684
+      },
+      {
+        "name": "m016_body_roughness",
+        "size": "2048x2048",
+        "bytes": 155906
+      },
+      {
+        "name": "m016_head_normal",
+        "size": "2048x2048",
+        "bytes": 804518
+      },
+      {
+        "name": "m016_head_color",
+        "size": "2048x2048",
+        "bytes": 556446
+      },
+      {
+        "name": "m016_head_roughness",
+        "size": "2048x2048",
+        "bytes": 343876
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
+        ]
+      }
+    },
+    "notes": "Charcoal plaid suit darkened to black; purple shirt recolored to white, dark tie to black. LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_06",
+    "file": "rocketbox_business_male_06.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_06",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.809,
+    "bytes": 3226476,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 30436,
+        "vertices": 16535,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
+      },
+      {
+        "name": "LOD1",
+        "triangles": 6950,
+        "vertices": 4150,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
+      },
+      {
+        "name": "LOD2",
+        "triangles": 3614,
+        "vertices": 2331,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1654,
+        "vertices": 1200,
+        "bones": 82,
+        "weightedBones": 77,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m025_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m025_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "rocketbox_business_male_06_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_06_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m025_body_normal",
+        "size": "2048x2048",
+        "bytes": 273646
+      },
+      {
+        "name": "m025_body_color",
+        "size": "2048x2048",
+        "bytes": 80136
+      },
+      {
+        "name": "m025_body_roughness",
+        "size": "2048x2048",
+        "bytes": 71464
+      },
+      {
+        "name": "m025_head_normal",
+        "size": "2048x2048",
+        "bytes": 535004
+      },
+      {
+        "name": "m025_head_color",
+        "size": "2048x2048",
+        "bytes": 348170
+      },
+      {
+        "name": "m025_head_roughness",
+        "size": "2048x2048",
+        "bytes": 364138
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
+        ]
+      }
+    },
+    "notes": "White shirt recolored to black (all-black shirt and trousers, no jacket). LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_business_male_07",
+    "file": "rocketbox_business_male_07.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Business_Male_07",
+    "license": "MIT",
+    "gender": "male",
+    "height_m": 1.794,
+    "bytes": 4184752,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 29716,
+        "vertices": 16107,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
+      },
+      {
+        "name": "LOD1",
+        "triangles": 6722,
+        "vertices": 4002,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
+      },
+      {
+        "name": "LOD2",
+        "triangles": 3468,
+        "vertices": 2218,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1596,
+        "vertices": 1148,
+        "bones": 82,
+        "weightedBones": 76,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "m018_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "m018_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "rocketbox_business_male_07_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_business_male_07_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "m018_body_normal",
+        "size": "2048x2048",
+        "bytes": 355280
+      },
+      {
+        "name": "m018_body_color",
+        "size": "2048x2048",
+        "bytes": 227866
+      },
+      {
+        "name": "m018_body_roughness",
+        "size": "2048x2048",
+        "bytes": 137054
+      },
+      {
+        "name": "m018_head_normal",
+        "size": "2048x2048",
+        "bytes": 666550
+      },
+      {
+        "name": "m018_head_color",
+        "size": "2048x2048",
+        "bytes": 691992
+      },
+      {
+        "name": "m018_head_roughness",
+        "size": "2048x2048",
+        "bytes": 597604
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 43.9,
+      "forearmBelowHorizontal_deg": 42.9,
+      "elbowFlex_deg": 20.7,
+      "leftPalmNormal": [
+        -0.774,
+        -0.63,
+        0.066
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.896,
+          0.015
+        ],
+        "Bip01_Spine": [
+          0,
+          1.016,
+          0.013
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.169,
+          0.006
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.322,
+          -0.005
+        ],
+        "Bip01_Neck": [
+          0,
+          1.522,
+          0.002
+        ],
+        "Bip01_Head": [
+          0,
+          1.588,
+          0.023
+        ],
+        "Bip01_L_Clavicle": [
+          0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_L_UpperArm": [
+          0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_L_Forearm": [
+          0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_L_Hand": [
+          0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_R_Clavicle": [
+          -0.073,
+          1.46,
+          -0.009
+        ],
+        "Bip01_R_UpperArm": [
+          -0.21,
+          1.429,
+          -0.011
+        ],
+        "Bip01_R_Forearm": [
+          -0.416,
+          1.231,
+          -0.005
+        ],
+        "Bip01_R_Hand": [
+          -0.588,
+          1.046,
+          0.095
+        ],
+        "Bip01_L_Finger1": [
+          0.638,
+          0.982,
+          0.148
+        ],
+        "Bip01_L_Finger11": [
+          0.651,
+          0.955,
+          0.157
+        ],
+        "Bip01_L_Finger12": [
+          0.657,
+          0.933,
+          0.163
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_L_Calf": [
+          0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.117,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.896,
+          0.015
+        ],
+        "Bip01_R_Calf": [
+          -0.109,
+          0.498,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.117,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.151,
+          0.003,
+          0.134
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.619,
+          0.04
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.033,
+          1.693,
+          0.124
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.034,
+          1.677,
+          0.125
+        ],
+        "Bip01_LEye": [
+          0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_REye": [
+          -0.032,
+          1.687,
+          0.109
+        ],
+        "Bip01_MNose": [
+          0,
+          1.656,
+          0.156
+        ],
+        "Bip01_L_ForeTwist": [
+          0.51,
+          1.129,
+          0.05
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.51,
+          1.129,
+          0.05
+        ]
+      }
+    },
+    "notes": "Older, bald. White shirt, striped tie and blue jeans recolored to black (all black, no jacket); the denim gets its own roughness k (target 0.8, its specular map is much brighter than the shirt's). LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
+  },
+  {
+    "id": "rocketbox_pilot_female_02",
+    "file": "rocketbox_pilot_female_02.glb",
+    "source": "rocketbox",
+    "sourceAvatar": "Pilot_Female_02",
+    "license": "MIT",
+    "gender": "female",
+    "height_m": 1.734,
+    "bytes": 3663928,
+    "lods": [
+      {
+        "name": "LOD0",
+        "triangles": 31930,
+        "vertices": 17541,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "subdivide"
+      },
+      {
+        "name": "LOD1",
+        "triangles": 7820,
+        "vertices": 4731,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "copy"
+      },
+      {
+        "name": "LOD2",
+        "triangles": 4034,
+        "vertices": 2643,
+        "bones": 82,
+        "weightedBones": 82,
+        "method": "meshopt"
+      },
+      {
+        "name": "LOD3",
+        "triangles": 1858,
+        "vertices": 1361,
+        "bones": 82,
+        "weightedBones": 78,
+        "method": "meshopt"
+      }
+    ],
+    "twistBones": true,
+    "twist": {
+      "bones": [
+        "Bip01_L_ForeTwist",
+        "Bip01_R_ForeTwist"
+      ],
+      "parents": {
+        "Bip01_L_ForeTwist": "Bip01_L_Forearm",
+        "Bip01_R_ForeTwist": "Bip01_R_Forearm"
+      },
+      "fraction": 0.55,
+      "axis": "local +X (same frame and roll as the forearm; +X points to the wrist)",
+      "drive": "twist.quaternion = rotation about local +X by the hand's roll (pronation/supination) relative to the forearm; 1.0 x the hand roll is what the weights are tuned for (forearm weight share smoothstep(0.15,1,t)*0.85)"
+    },
+    "materials": [
+      {
+        "name": "f169_body",
+        "part": "body",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "f169_head",
+        "part": "head",
+        "alphaMode": "OPAQUE",
+        "roughness": "map"
+      },
+      {
+        "name": "rocketbox_pilot_female_02_eyes",
+        "part": "eyes",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.05
+      },
+      {
+        "name": "rocketbox_pilot_female_02_mouth",
+        "part": "mouth",
+        "alphaMode": "OPAQUE",
+        "roughness": 0.2
+      }
+    ],
+    "textures": [
+      {
+        "name": "f169_body_normal",
+        "size": "2048x2048",
+        "bytes": 310474
+      },
+      {
+        "name": "f169_body_color",
+        "size": "2048x2048",
+        "bytes": 146770
+      },
+      {
+        "name": "f169_body_roughness",
+        "size": "2048x2048",
+        "bytes": 94004
+      },
+      {
+        "name": "f169_head_normal",
+        "size": "2048x2048",
+        "bytes": 513720
+      },
+      {
+        "name": "f169_head_color",
+        "size": "2048x2048",
+        "bytes": 514318
+      },
+      {
+        "name": "f169_head_roughness",
+        "size": "2048x2048",
+        "bytes": 405726
+      }
+    ],
+    "rig": "bip01",
+    "rootNode": "Bip01",
+    "boneNames": [
+      "Bip01_Pelvis",
+      "Bip01_Spine",
+      "Bip01_L_Thigh",
+      "Bip01_L_Calf",
+      "Bip01_L_Foot",
+      "Bip01_L_Toe0",
+      "Bip01_R_Thigh",
+      "Bip01_R_Calf",
+      "Bip01_R_Foot",
+      "Bip01_R_Toe0",
+      "Bip01_Spine1",
+      "Bip01_Spine2",
+      "Bip01_Neck",
+      "Bip01_Head",
+      "Bip01_LCaninus",
+      "Bip01_LCheek",
+      "Bip01_LEye",
+      "Bip01_LEyeBlinkBottom",
+      "Bip01_LEyeBlinkTop",
+      "Bip01_LInnerEyebrow",
+      "Bip01_LMasseter",
+      "Bip01_LMouthCorner",
+      "Bip01_LOuterEyebrow",
+      "Bip01_LUpperlip",
+      "Bip01_MJaw",
+      "Bip01_LMouthBottom",
+      "Bip01_MBottomLip",
+      "Bip01_MTongue",
+      "Bip01_RMouthBottom",
+      "Bip01_MMiddleEyebrow",
+      "Bip01_MNose",
+      "Bip01_MUpperLip",
+      "Bip01_RCaninus",
+      "Bip01_RCheek",
+      "Bip01_REye",
+      "Bip01_REyeBlinkBottom",
+      "Bip01_REyeBlinkTop",
+      "Bip01_RInnerEyebrow",
+      "Bip01_RMasseter",
+      "Bip01_RMouthCorner",
+      "Bip01_ROuterEyebrow",
+      "Bip01_RUpperlip",
+      "Bip01_L_Clavicle",
+      "Bip01_L_UpperArm",
+      "Bip01_L_Forearm",
+      "Bip01_L_ForeTwist",
+      "Bip01_L_Hand",
+      "Bip01_L_Finger0",
+      "Bip01_L_Finger01",
+      "Bip01_L_Finger02",
+      "Bip01_L_Finger1",
+      "Bip01_L_Finger11",
+      "Bip01_L_Finger12",
+      "Bip01_L_Finger2",
+      "Bip01_L_Finger21",
+      "Bip01_L_Finger22",
+      "Bip01_L_Finger3",
+      "Bip01_L_Finger31",
+      "Bip01_L_Finger32",
+      "Bip01_L_Finger4",
+      "Bip01_L_Finger41",
+      "Bip01_L_Finger42",
+      "Bip01_R_Clavicle",
+      "Bip01_R_UpperArm",
+      "Bip01_R_Forearm",
+      "Bip01_R_ForeTwist",
+      "Bip01_R_Hand",
+      "Bip01_R_Finger0",
+      "Bip01_R_Finger01",
+      "Bip01_R_Finger02",
+      "Bip01_R_Finger1",
+      "Bip01_R_Finger11",
+      "Bip01_R_Finger12",
+      "Bip01_R_Finger2",
+      "Bip01_R_Finger21",
+      "Bip01_R_Finger22",
+      "Bip01_R_Finger3",
+      "Bip01_R_Finger31",
+      "Bip01_R_Finger32",
+      "Bip01_R_Finger4",
+      "Bip01_R_Finger41",
+      "Bip01_R_Finger42"
+    ],
+    "bindPose": {
+      "pose": "A-pose (native Rocketbox bind pose = glTF rest pose; no animations in file)",
+      "space": "glTF world, meters, +Y up, character faces +Z, character left = +X; joint origins in the rest (bind) pose",
+      "axes": "3ds Max Biped joint frames: spine/limb/finger joints point to their child along local +X; hands: palm normal = local +Y (both sides); root node Bip01 has identity transform",
+      "upperArmBelowHorizontal_deg": 42.3,
+      "forearmBelowHorizontal_deg": 37.7,
+      "elbowFlex_deg": 23.4,
+      "leftPalmNormal": [
+        -0.802,
+        -0.597,
+        0.029
+      ],
+      "joints": {
+        "Bip01_Pelvis": [
+          0,
+          0.927,
+          0.063
+        ],
+        "Bip01_Spine": [
+          0,
+          1.047,
+          0.061
+        ],
+        "Bip01_Spine1": [
+          0,
+          1.171,
+          0.058
+        ],
+        "Bip01_Spine2": [
+          0,
+          1.292,
+          0.045
+        ],
+        "Bip01_Neck": [
+          0,
+          1.457,
+          -0.009
+        ],
+        "Bip01_Head": [
+          0,
+          1.526,
+          0.006
+        ],
+        "Bip01_L_Clavicle": [
+          0.077,
+          1.406,
+          0.006
+        ],
+        "Bip01_L_UpperArm": [
+          0.172,
+          1.384,
+          0.002
+        ],
+        "Bip01_L_Forearm": [
+          0.359,
+          1.214,
+          0
+        ],
+        "Bip01_L_Hand": [
+          0.524,
+          1.067,
+          0.093
+        ],
+        "Bip01_R_Clavicle": [
+          -0.077,
+          1.406,
+          0.006
+        ],
+        "Bip01_R_UpperArm": [
+          -0.172,
+          1.384,
+          0.002
+        ],
+        "Bip01_R_Forearm": [
+          -0.359,
+          1.214,
+          0
+        ],
+        "Bip01_R_Hand": [
+          -0.524,
+          1.067,
+          0.093
+        ],
+        "Bip01_L_Finger1": [
+          0.567,
+          1.001,
+          0.147
+        ],
+        "Bip01_L_Finger11": [
+          0.586,
+          0.971,
+          0.16
+        ],
+        "Bip01_L_Finger12": [
+          0.593,
+          0.95,
+          0.166
+        ],
+        "Bip01_L_Thigh": [
+          0.088,
+          0.927,
+          0.063
+        ],
+        "Bip01_L_Calf": [
+          0.104,
+          0.502,
+          0.031
+        ],
+        "Bip01_L_Foot": [
+          0.118,
+          0.103,
+          0
+        ],
+        "Bip01_L_Toe0": [
+          0.152,
+          0.006,
+          0.131
+        ],
+        "Bip01_R_Thigh": [
+          -0.088,
+          0.927,
+          0.063
+        ],
+        "Bip01_R_Calf": [
+          -0.104,
+          0.502,
+          0.031
+        ],
+        "Bip01_R_Foot": [
+          -0.118,
+          0.103,
+          0
+        ],
+        "Bip01_R_Toe0": [
+          -0.152,
+          0.006,
+          0.131
+        ],
+        "Bip01_MJaw": [
+          0,
+          1.554,
+          0.023
+        ],
+        "Bip01_LEyeBlinkTop": [
+          0.032,
+          1.622,
+          0.101
+        ],
+        "Bip01_LEyeBlinkBottom": [
+          0.033,
+          1.608,
+          0.102
+        ],
+        "Bip01_REyeBlinkTop": [
+          -0.032,
+          1.622,
+          0.101
+        ],
+        "Bip01_REyeBlinkBottom": [
+          -0.033,
+          1.608,
+          0.102
+        ],
+        "Bip01_LEye": [
+          0.03,
+          1.616,
+          0.092
+        ],
+        "Bip01_REye": [
+          -0.03,
+          1.616,
+          0.092
+        ],
+        "Bip01_MNose": [
+          0,
+          1.588,
+          0.131
+        ],
+        "Bip01_L_ForeTwist": [
+          0.45,
+          1.133,
+          0.051
+        ],
+        "Bip01_R_ForeTwist": [
+          -0.45,
+          1.133,
+          0.051
+        ]
+      }
+    },
+    "notes": "Pilot cap removed (hat material deleted; the hair bun is modelled underneath). White short-sleeve blouse and gold epaulettes recolored to black; black trousers kept. The trousers get their own roughness k (target 0.8; their specular map made them read as leather). LOD0 is the Rocketbox hipoly_81_bones mesh re-quadded and Catmull-Clark subdivided once (close-ups); LOD1 is the original hipoly mesh; LOD2/LOD3 are meshoptimizer simplifications of it (original vertices kept; the repo FBX ships no other LOD meshes). Forearm twist bones Bip01_L_ForeTwist / Bip01_R_ForeTwist: children of the forearms (hands stay children of the forearms); rotate them about local +X with the hand roll. Eyeballs (separate geometry, rotated by Bip01_LEye / Bip01_REye) and the mouth interior (teeth, gums, tongue) have their own materials (*_eyes, *_mouth) sharing the head textures. In three.js each LOD node is a Group with one SkinnedMesh child per material; all share one Skeleton."
   }
 ]
