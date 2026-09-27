@@ -5,6 +5,8 @@ export type Patch =
   | { lib: 'vcsl'; name: string; gain: number; key?: number }
   | { lib: 'smolken'; name: 'Arco' | 'Pizzicato'; gain: number };
 
+// loop data only exists for some MusyngKite instruments (clarinet, horn, trombone, tuba and
+// string_ensemble_1 have none), so those load without it
 const sf = (name: string, gain = 1, loop = true): Patch => ({ lib: 'soundfont', name, gain, loop });
 const vcsl = (name: string, gain = 1, key?: number): Patch => ({ lib: 'vcsl', name, gain, key });
 
@@ -38,9 +40,9 @@ export function patchFor(section: SectionId, program: number, drum?: DrumKind): 
     case 'trumpet':
       return sf('trumpet', 0.6);
     case 'trombone':
-      return sf('trombone', 0.7);
+      return sf('trombone', 0.7, false);
     case 'tuba':
-      return sf('tuba', 0.8);
+      return sf('tuba', 0.8, false);
     case 'timpani':
       return vcsl('Membranophones/Struck Membranophones/Timpani 1 - Hit', 1.2);
     case 'percussion':
@@ -65,11 +67,11 @@ export function sectionLayer(section: SectionId, program: number): Patch | null 
   switch (section) {
     case 'violin1':
     case 'violin2':
-      return sf('string_ensemble_1', 0.55);
+      return sf('string_ensemble_1', 0.55, false);
     case 'viola':
-      return sf('string_ensemble_1', 0.5);
+      return sf('string_ensemble_1', 0.5, false);
     case 'cello':
-      return sf('string_ensemble_1', 0.42);
+      return sf('string_ensemble_1', 0.42, false);
     default:
       return null;
   }
