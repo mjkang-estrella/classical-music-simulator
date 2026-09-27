@@ -3,6 +3,7 @@ import { orchestra } from '../scene/orchestra';
 import { cameraHandle } from '../scene/Viewport';
 import { loadPiece, play, pause, seek } from './controller';
 import { useApp } from './store';
+import { setSkinScattering } from '../assets/characterMaterials';
 
 /** Test / debugging hooks (used by the Playwright end-to-end tests). */
 const api = {
@@ -47,6 +48,19 @@ const api = {
     const p = t.clone().add(off);
     void c.setLookAt(p.x, p.y, p.z, t.x, t.y, t.z, false);
   },
+  blink: (id: string, v: number | null) => {
+    const a = orchestra.actorById(id);
+    if (a) a.debugBlink = v;
+  },
+  faceTest: (id: string, list: { key: string; pitch?: number; yaw?: number; roll?: number; x?: number; y?: number; z?: number }[]) => {
+    const a = orchestra.actorById(id);
+    if (a) a.debugFace = list;
+  },
+  face: (id: string) => {
+    const a = orchestra.actorById(id);
+    return a ? Object.fromEntries(Object.entries(a.rig.face).map(([k, b]) => [k, b?.name])) : null;
+  },
+  skin: (v: number) => setSkinScattering(v),
   stands: (v: boolean) => orchestra.setStandsVisible(v),
   perf: () => ({ updateMs: +orchestra.lastUpdateMs.toFixed(2) }),
   /** raw access for debugging in the console */

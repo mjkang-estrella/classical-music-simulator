@@ -103,12 +103,14 @@ test('timpani sticks strike the head exactly on the beat (diagnostics piece)', a
   await ready(page);
   await page.evaluate(() => void window.__orchestra.load('diagnostics', false));
   await page.waitForFunction(() => window.__orchestra.status() === 'ready', null, { timeout: 120_000 });
+  // the selected musician is animated every frame regardless of distance
+  await page.evaluate(() => window.__orchestra.select('timpani-0'));
   const beat = 60 / 96;
   const distanceAt = (t: number) =>
     page.evaluate(async (time) => {
       const o = window.__orchestra;
       o.seek(time);
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 300));
       const a = o.orchestra.actorById('timpani-0')!;
       const v = () => a.root.position.clone();
       const tips = (['L', 'R'] as const).map((s) => a.inst!.held![s]!.getObjectByName('anchor_tip')!.getWorldPosition(v()));

@@ -137,3 +137,24 @@ describe('performance plans', () => {
     expect(before.h).toBeGreaterThan(at.h);
   });
 });
+
+describe('cast variety', () => {
+  it('never seats the same avatar next to itself when enough variants exist', async () => {
+    const { assignVariants } = await import('../../src/scene/orchestra');
+    const { meta, score } = load('dvorak-9-iv');
+    const m = buildEnsemble(score, meta);
+    const v = assignVariants(m, 8);
+    let clashes = 0;
+    for (const a of m)
+      for (const b of m) {
+        if (a === b) continue;
+        const d = Math.hypot(a.seat.x - b.seat.x, a.seat.z - b.seat.z);
+        if (d < 0.9 && v.get(a.id) === v.get(b.id)) clashes++;
+      }
+    expect(clashes).toBe(0);
+    // roughly balanced use of avatars
+    const counts = new Array(8).fill(0);
+    for (const x of v.values()) counts[x]++;
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(4);
+  });
+});

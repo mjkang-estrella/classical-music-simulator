@@ -47,6 +47,8 @@ interface Limb {
 interface HandInfo {
   bone: Bone;
   forearm: Bone;
+  /** optional forearm twist bone (child of the forearm, carries the distal forearm skin) */
+  twist?: Bone;
   r0: Quaternion;
   /** hand world rotation relative to the forearm in bind pose (a "straight wrist") */
   relBind: Quaternion;
@@ -63,6 +65,48 @@ interface FingerChain {
   /** thumb only — per-bone local axis: +angle moves across the palm toward the little finger */
   across: Vector3[];
 }
+
+export interface FaceBones {
+  eyeL?: Bone;
+  eyeR?: Bone;
+  lidTopL?: Bone;
+  lidTopR?: Bone;
+  lidBotL?: Bone;
+  lidBotR?: Bone;
+  browInL?: Bone;
+  browInR?: Bone;
+  browOutL?: Bone;
+  browOutR?: Bone;
+  browMid?: Bone;
+  cornerL?: Bone;
+  cornerR?: Bone;
+  lipUp?: Bone;
+  lipLow?: Bone;
+  cheekL?: Bone;
+  cheekR?: Bone;
+  jaw?: Bone;
+}
+
+const FACE_PATTERNS: [keyof FaceBones, RegExp][] = [
+  ['eyeL', /L_?Eye$/i],
+  ['eyeR', /R_?Eye$/i],
+  ['lidTopL', /L_?EyeBlinkTop$/i],
+  ['lidTopR', /R_?EyeBlinkTop$/i],
+  ['lidBotL', /L_?EyeBlinkBottom$/i],
+  ['lidBotR', /R_?EyeBlinkBottom$/i],
+  ['browInL', /L_?InnerEyebrow$/i],
+  ['browInR', /R_?InnerEyebrow$/i],
+  ['browOutL', /L_?OuterEyebrow$/i],
+  ['browOutR', /R_?OuterEyebrow$/i],
+  ['browMid', /M_?MiddleEyebrow$/i],
+  ['cornerL', /L_?MouthCorner$/i],
+  ['cornerR', /R_?MouthCorner$/i],
+  ['lipUp', /M_?UpperLip$/i],
+  ['lipLow', /M_?BottomLip$/i],
+  ['cheekL', /L_?Cheek$/i],
+  ['cheekR', /R_?Cheek$/i],
+  ['jaw', /M_?Jaw$/i],
+];
 
 interface AxisSet {
   /** root-space X (pitch forward), Y (turn left), Z (roll) expressed in the bone's local frame */
@@ -103,6 +147,10 @@ export class Rig {
   private readonly hipsParentInv = new Matrix4();
   private readonly footRootQ: Record<Side, Quaternion> = { Left: new Quaternion(), Right: new Quaternion() };
   readonly bindHips = new Vector3();
+  /** optional facial bones (Rocketbox Biped face rig) */
+  readonly face: FaceBones = {};
+  private readonly eyeBindQ = new Map<Bone, Quaternion>();
+  private readonly facePosBind = new Map<Bone, Vector3>();
 
   /** `root` must be at the origin with identity rotation when constructed. */
   constructor(root: Object3D) {
@@ -194,7 +242,9 @@ export class Rig {
       palm.normalize();
       const r0 = frameQuat(dir, palm, new Quaternion()).invert().multiply(worldQuat(bone, new Quaternion()));
       const relBind = worldQuat(forearm, new Quaternion()).invert().multiply(worldQuat(bone, new Quaternion()));
-      return { bone, forearm, r0, relBind, palm: palmLen };
+      const twistRe = side === 'Left' ? /L_?Fore_?Twist$/i : /R_?Fore_?Twist$/i;
+      const twist = forearm.children.find((c) => (c as Bone).isBone && twistRe.test(c.name.replace(/\s/g, '_'))) as Bone | undefined;
+      return { bone, forearm, twist, r0, relBind, palm: palmLen };
     };
     this.hands = { Left: hand('Left'), Right: hand('Right') };
 
@@ -233,6 +283,22 @@ export class Rig {
       return out;
     };
     this.fingers = { Left: fingerChains('Left'), Right: fingerChains('Right') };
+
+    for (const bone of this.allBones) {
+      const n = bone.name.replace(/^Bip0?1_?/i, '').replace(/[\s_]/g, '');
+      for (const [key, re] of FACE_PATTERNS) if (!this.face[key] && re.test(n)) this.face[key] = bone;
+    }
+    for (const bone of Object.values(this.face)) {
+      if (!bone) continue;
+      const inv = worldQuat(bone, new Quaternion()).invert();
+      this.axes.set(bone, {
+        x: new Vector3(1, 0, 0).applyQuaternion(inv),
+        y: new Vector3(0, 1, 0).applyQuaternion(inv),
+        z: new Vector3(0, 0, 1).applyQuaternion(inv),
+      });
+      this.facePosBind.set(bone, bone.position.clone());
+    }
+    for (const eye of [this.face.eyeL, this.face.eyeR]) if (eye) this.eyeBindQ.set(eye, worldQuat(eye, new Quaternion()));
 
     for (const name of ['Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder', 'Hips', 'Jaw'] as CanonBone[]) {
       const bone = b[name];
@@ -336,11 +402,18 @@ export class Rig {
     const axis = worldPos(h.bone, _v).sub(worldPos(h.forearm, _v2)).normalize();
     twistAbout(delta, axis, _qt);
     const share = _qs.identity().slerp(_qt, twistShare);
-    this.setWorldQuat(h.forearm, _qx.copy(share).multiply(qFore));
-    h.forearm.updateMatrixWorld(true);
-    // limit the remaining wrist deviation
+    if (h.twist) {
+      // radius/ulna roll: the twist bone carries the distal forearm, the elbow stays put
+      this.setWorldQuat(h.twist, _qx.copy(share).multiply(worldQuat(h.twist, _qr)));
+      h.twist.updateMatrixWorld(true);
+    } else {
+      this.setWorldQuat(h.forearm, _qx.copy(share).multiply(qFore));
+      h.forearm.updateMatrixWorld(true);
+    }
+    // limit the remaining wrist deviation (relative to the twisted forearm)
     worldQuat(h.forearm, _qf);
     _qn.copy(_qf).multiply(h.relBind);
+    if (h.twist) _qn.premultiply(share);
     const rel = _qr.copy(_qn).invert().multiply(target);
     if (rel.w < 0) rel.set(-rel.x, -rel.y, -rel.z, -rel.w);
     const angle = 2 * Math.acos(Math.min(1, rel.w));
@@ -410,6 +483,69 @@ export class Rig {
       chain.bones[i].quaternion.multiply(_q2.setFromAxisAngle(chain.flex[i], amount * base * w));
     }
     if (spread) chain.bones[0].quaternion.multiply(_q2.setFromAxisAngle(chain.spread, spread));
+  }
+
+  /** Rotates a face bone about root-space axes (same convention as rotate()). */
+  rotateFace(key: keyof FaceBones, pitch: number, yaw = 0, roll = 0): void {
+    const bone = this.face[key];
+    const ax = bone && this.axes.get(bone);
+    if (!bone || !ax) return;
+    if (pitch) bone.quaternion.multiply(_q.setFromAxisAngle(ax.x, pitch));
+    if (yaw) bone.quaternion.multiply(_q.setFromAxisAngle(ax.y, yaw));
+    if (roll) bone.quaternion.multiply(_q.setFromAxisAngle(ax.z, roll));
+  }
+
+  /** Translates a face bone along root-space axes (metres, in the bind orientation). */
+  nudgeFace(key: keyof FaceBones, x: number, y: number, z: number): void {
+    const bone = this.face[key];
+    const ax = bone && this.axes.get(bone);
+    const bind = bone && this.facePosBind.get(bone);
+    if (!bone || !ax || !bind) return;
+    // axes map root directions into the bone's own frame; its position lives in the parent frame
+    const parentAx = bone.parent ? this.parentAxes(bone) : null;
+    if (!parentAx) return;
+    bone.position.copy(bind).addScaledVector(parentAx.x, x).addScaledVector(parentAx.y, y).addScaledVector(parentAx.z, z);
+  }
+
+  private parentAxesCache = new Map<Bone, AxisSet>();
+  private parentAxes(bone: Bone): AxisSet | null {
+    let a = this.parentAxesCache.get(bone);
+    if (!a && bone.parent) {
+      // root-space unit axes expressed in the parent's local frame, including its scale
+      const inv = new Matrix4().copy(bone.parent.matrixWorld).invert();
+      const origin = new Vector3().applyMatrix4(inv);
+      const f = (x: number, y: number, z: number) => new Vector3(x, y, z).applyMatrix4(inv).sub(origin);
+      a = { x: f(1, 0, 0), y: f(0, 1, 0), z: f(0, 0, 1) };
+      this.parentAxesCache.set(bone, a);
+    }
+    return a ?? null;
+  }
+
+  hasFace(): boolean {
+    return !!(this.face.lidTopL && this.face.eyeL);
+  }
+
+  /**
+   * Turns both eyes toward a world-space point (clamped to ±limit radians from the head's
+   * forward direction). Needs current world matrices (call after update()).
+   */
+  aimEyes(target: Vector3, amount = 1, limit = 0.45): void {
+    for (const eye of [this.face.eyeL, this.face.eyeR]) {
+      if (!eye) continue;
+      const bindQ = this.eyeBindQ.get(eye)!;
+      const qNow = worldQuat(eye, _qa);
+      // the eye's resting forward, carried along by the head
+      const rest = _qb.copy(qNow).multiply(_qp.copy(bindQ).invert());
+      const fwd = _v.set(0, 0, 1).applyQuaternion(rest);
+      const to = _v2.copy(target).sub(worldPos(eye, _v3)).normalize();
+      let angle = fwd.angleTo(to);
+      if (angle < 1e-4) continue;
+      const scale = Math.min(1, limit / angle) * amount;
+      angle *= scale;
+      const axis = _v3.crossVectors(fwd, to).normalize();
+      const delta = _qx.setFromAxisAngle(axis, angle);
+      this.setWorldQuat(eye, delta.multiply(qNow));
+    }
   }
 
   hasFingers(side: Side): boolean {

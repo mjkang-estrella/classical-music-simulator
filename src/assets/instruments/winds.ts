@@ -54,7 +54,7 @@ export function buildFlute(m: Materials, piccolo = false): InstrumentModel {
     anchors,
     grips: {
       // left hand turned back: the flute rests on the index base, fingers come over from the far side
-      L: { ...grip(root, 'grip_L', v(0.022, -0.02, 0.12 * s), v(0.1, 0.98, -0.1), v(-0.95, 0.2, 0.2), 'keys', 'keysPressed'), twist: 0.9, wrist: 1.4 },
+      L: { ...grip(root, 'grip_L', v(0.016, -0.036, 0.12 * s), v(0.25, 0.95, -0.1), v(-0.95, 0.25, 0.15), 'fluteLeft', 'fluteLeftPressed'), twist: 0.9, wrist: 1.4 },
       // right hand: fingers arch over the top from the player's side, thumb underneath
       R: grip(root, 'grip_R', v(-0.034, -0.016, 0.39 * s), v(0.35, 0.93, 0.06), v(0.95, 0.1, -0.2), 'keys', 'keysPressed'),
     },

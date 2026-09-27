@@ -3,7 +3,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { Rig } from '../rig/rig';
-import { sectionMaterial } from './instrumentFactory';
+import { installShader, personalize, realisticMaterial } from './characterMaterials';
+import { registerInstanceMaterial, sectionMaterial } from './instrumentFactory';
 import { buildMannequin, mannequinStyle } from './placeholder/mannequin';
 
 export interface CharacterEntry {
@@ -66,6 +67,20 @@ export async function loadCharacterLibrary(onProgress?: (done: number, total: nu
     }),
   );
   protos = results.filter(Boolean) as Proto[];
+  // upgrade the GLB materials once per prototype: skin scattering, fabric sheen, hair highlights
+  for (const p of protos) {
+    const upgraded = new Map<Material, Material>();
+    p.scene.traverse((o) => {
+      const mesh = o as Mesh;
+      if (!mesh.isMesh) return;
+      const swap = (m: Material) => {
+        let u = upgraded.get(m);
+        if (!u) upgraded.set(m, (u = realisticMaterial(m)));
+        return u;
+      };
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
+    });
+  }
   // validate each rig once so a broken asset falls back to the mannequin
   protos = protos.filter((p) => {
     try {
@@ -91,34 +106,61 @@ function lodLevel(name: string): number {
 }
 
 /** Creates a posable character for a musician. `seed` in [0,1) picks the variant deterministically. */
-export function createCharacter(seed: number, section: string, conductor = false): CharacterInstance {
+export function characterVariantCount(): number {
+  return protos.length;
+}
+
+/**
+ * Creates a posable character. `variant` (if given) picks the base avatar explicitly, so the
+ * orchestra can avoid seating identical twins side by side; `seed` drives per-person variation.
+ */
+export function createCharacter(seed: number, section: string, conductor = false, variant?: number): CharacterInstance {
   if (protos.length) {
     const pool = conductor ? protos.filter((p) => p.entry.gender !== 'female') : protos;
-    const proto = (pool.length ? pool : protos)[Math.floor(seed * (pool.length || protos.length)) % (pool.length || protos.length)];
+    const list = pool.length ? pool : protos;
+    const proto = variant !== undefined && !conductor ? protos[variant % protos.length] : list[Math.floor(seed * list.length) % list.length];
     const root = new Group();
     root.name = `character-${proto.entry.id}`;
     const scene = skeletonClone(proto.scene);
+    // people differ in size: ±3.5 % overall scale
+    const r = Math.sin(seed * 7919.3) * 43758.5453;
+    scene.scale.setScalar(0.965 + (r - Math.floor(r)) * 0.07);
     root.add(scene);
     const lods: SkinnedMesh[][] = [];
+    const twins: [SkinnedMesh, SkinnedMesh][] = [];
     scene.traverse((o) => {
       const mesh = o as SkinnedMesh;
-      if ((mesh as Mesh).isMesh) {
+      if ((mesh as Mesh).isMesh && !mesh.userData.hairTwin) {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.frustumCulled = false;
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        for (const m of mats) {
-          // smooth alpha-clipped hair / lashes with MSAA
-          if ((m as Material).alphaTest > 0) (m as Material).alphaToCoverage = true;
-        }
-        const mapped = mats.map((m) => sectionMaterial(section, m as Material));
+        // each musician gets their own material instances so skin tone / hair colour can vary
+        const mapped = mats.map((m) => instanceMaterial(m as Material, section, seed));
         mesh.material = Array.isArray(mesh.material) ? mapped : mapped[0];
         if (mesh.isSkinnedMesh) {
           const level = lodLevel(mesh.name) || lodLevel(mesh.parent?.name ?? '');
           (lods[level] ??= []).push(mesh);
+          // two-pass hair: solid core with a high cutoff + a blended pass for soft strand edges
+          const hair = !Array.isArray(mesh.material) && (mesh.material as Material).userData.hair;
+          if (hair && level <= 1) {
+            const twin = new SkinnedMesh(mesh.geometry, hairBlendMaterial(mesh.material as Material, section, seed));
+            twin.userData.hairTwin = true;
+            twin.position.copy(mesh.position);
+            twin.quaternion.copy(mesh.quaternion);
+            twin.scale.copy(mesh.scale);
+            twin.frustumCulled = false;
+            twin.renderOrder = 3;
+            twin.castShadow = false;
+            twin.bind(mesh.skeleton, mesh.bindMatrix);
+            twins.push([mesh, twin]);
+            (mesh.material as Material).alphaTest = 0.55;
+            (lods[level] ??= []).push(twin);
+          }
         }
       }
     });
+    for (const [mesh, twin] of twins) mesh.parent?.add(twin);
     const compact = lods.filter(Boolean);
     const rig = new Rig(root);
     return { root, rig, lods: compact, source: 'glb', id: proto.entry.id };
@@ -127,6 +169,46 @@ export function createCharacter(seed: number, section: string, conductor = false
   mesh.material = sectionMaterial(section, mesh.material as Material);
   const rig = new Rig(root);
   return { root, rig, lods: [[mesh]], source: 'mannequin', id: 'mannequin' };
+}
+
+const instanceCache = new Map<string, Material>();
+
+function instanceMaterial(m: Material, section: string, seed: number): Material {
+  const key = `${m.uuid}:${section}:${seed}`;
+  let c = instanceCache.get(key);
+  if (!c) {
+    c = m.clone();
+    c.userData.base = m;
+    installShader(c);
+    personalize(c, seed);
+    if ((m as Material).alphaTest > 0) c.alphaToCoverage = true;
+    registerInstanceMaterial(section, c);
+    instanceCache.set(key, c);
+  }
+  return c;
+}
+
+function hairBlendMaterial(solid: Material, section: string, seed: number): Material {
+  const key = `${solid.uuid}:blend`;
+  let c = instanceCache.get(key);
+  if (!c) {
+    c = solid.clone();
+    c.userData.base = solid.userData.base ?? solid;
+    installShader(c);
+    personalize(c, seed);
+    c.transparent = true;
+    c.alphaTest = 0.02;
+    c.alphaToCoverage = false;
+    c.depthWrite = false;
+    registerInstanceMaterial(section, c);
+    instanceCache.set(key, c);
+  }
+  return c;
+}
+
+/** Called when the orchestra is rebuilt. */
+export function releaseCharacterInstances() {
+  instanceCache.clear();
 }
 
 const mannequinCache = new Map<string, { root: Group; mesh: SkinnedMesh }>();

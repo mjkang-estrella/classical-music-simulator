@@ -233,8 +233,23 @@ export function sectionMaterial(section: string, mat: Material): Material {
   return clone;
 }
 
+/** Per-musician materials (characters) — registered so section highlighting reaches them. */
+const instanceMaterials = new Map<string, Set<Material>>();
+
+export function registerInstanceMaterial(section: string, mat: Material) {
+  let set = instanceMaterials.get(section);
+  if (!set) instanceMaterials.set(section, (set = new Set()));
+  set.add(mat);
+}
+
+/** Drops per-musician materials when the orchestra is rebuilt. */
+export function clearInstanceMaterials() {
+  for (const set of instanceMaterials.values()) for (const m of set) m.dispose();
+  instanceMaterials.clear();
+}
+
 export function materialsForSection(section: string): Material[] {
-  return [...(sectionMaterials.get(section)?.values() ?? [])];
+  return [...(sectionMaterials.get(section)?.values() ?? []), ...(instanceMaterials.get(section) ?? [])];
 }
 
 function cloneTree(obj: Object3D, section: string): Object3D {

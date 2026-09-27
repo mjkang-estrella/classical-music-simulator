@@ -2,7 +2,8 @@ import { Color, Group, Material, Mesh, MeshStandardMaterial, Raycaster, Vector3,
 import { Actor } from '../animation/actor';
 import type { FrameState } from '../animation/frame';
 import { buildPlans, type Plans } from '../animation/plans';
-import { materialsForSection } from '../assets/instrumentFactory';
+import { clearInstanceMaterials, materialsForSection } from '../assets/instrumentFactory';
+import { characterVariantCount, releaseCharacterInstances } from '../assets/characterFactory';
 import { buildSeatingProps } from '../assets/props';
 import { loudnessAt } from '../music/midiLoader';
 import type { Note, PieceMeta, Score, SectionId } from '../music/types';
@@ -66,8 +67,9 @@ export class Orchestra {
     this.musicians = buildEnsemble(s, meta);
     this.plans = score ? buildPlans(score) : new Map();
     this.indexes = new Map((score?.parts ?? []).map((p) => [p.id, new NoteIndex(p.notes)]));
+    const variants = assignVariants(this.musicians, characterVariantCount());
     for (const m of this.musicians) {
-      const actor = new Actor(m, new Vector3(m.seat.x, m.seat.y, m.seat.z), m.seat.yaw, m.instrument, m.seat.kind);
+      const actor = new Actor(m, new Vector3(m.seat.x, m.seat.y, m.seat.z), m.seat.yaw, m.instrument, m.seat.kind, variants.get(m.id));
       this.actors.push(actor);
       this.group.add(actor.root, actor.props);
     }
@@ -97,6 +99,8 @@ export class Orchestra {
     this.actors = [];
     this.conductor = null;
     this.props = null;
+    clearInstanceMaterials();
+    releaseCharacterInstances();
   }
 
   get allActors(): Actor[] {
@@ -229,6 +233,39 @@ export class Orchestra {
     for (const a of list) c.add(a.root.position);
     return c.divideScalar(list.length);
   }
+}
+
+/**
+ * Greedy variant assignment: each musician gets the avatar least used among their nearest
+ * neighbours (then least used overall), so identical faces never sit side by side.
+ */
+export function assignVariants(musicians: Musician[], count: number): Map<string, number> {
+  const out = new Map<string, number>();
+  if (count <= 0) return out;
+  const used = new Array(count).fill(0);
+  const placed: { x: number; z: number; v: number }[] = [];
+  const order = [...musicians].sort((a, b) => a.seed - b.seed);
+  for (const m of order) {
+    // closer look-alikes cost more (1/d²), so the nearest neighbours always differ
+    const penalty = new Array(count).fill(0);
+    for (const p of placed) {
+      const d = Math.hypot(p.x - m.seat.x, p.z - m.seat.z);
+      if (d < 3.5) penalty[p.v] += 1 / Math.max(0.2, d * d);
+    }
+    let best = 0;
+    let bestScore = Infinity;
+    for (let v = 0; v < count; v++) {
+      const score = penalty[v] * 100 + used[v] + ((v + Math.floor(m.seed * 97)) % count) * 0.01;
+      if (score < bestScore) {
+        bestScore = score;
+        best = v;
+      }
+    }
+    used[best]++;
+    placed.push({ x: m.seat.x, z: m.seat.z, v: best });
+    out.set(m.id, best);
+  }
+  return out;
 }
 
 function applyDim(mat: Material, dim: number, glow: number) {

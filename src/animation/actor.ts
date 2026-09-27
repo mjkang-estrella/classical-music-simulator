@@ -46,6 +46,9 @@ interface Smoothed {
   pluckR: number;
   batonFlick: number;
   glance: number;
+  blink: number;
+  jaw: number;
+  brow: number;
 }
 
 /** One performer on stage: character + instrument + the logic that animates them from the score. */
@@ -65,7 +68,7 @@ export class Actor {
   readonly jitter: number;
   readonly seed: number;
   readonly torso = new Basis();
-  private readonly s: Smoothed = { raise: 0, lean: 0, loud: 0, trend: 0, bowLift: 0, bowTwist: 0, stringF: 2, handZ: NaN, vib: 0, cue: 0, cueYaw: 0, arms: 0, nod: 0, inhale: 0, pluckL: 0, pluckR: 0, batonFlick: 0, glance: 0 };
+  private readonly s: Smoothed = { raise: 0, lean: 0, loud: 0, trend: 0, bowLift: 0, bowTwist: 0, stringF: 2, handZ: NaN, vib: 0, cue: 0, cueYaw: 0, arms: 0, nod: 0, inhale: 0, pluckL: 0, pluckR: 0, batonFlick: 0, glance: 0, blink: 0, jaw: 0, brow: 0 };
   /** current (smoothed) finger poses */
   private readonly hands: Record<Hand, HandPose> = { Left: clonePose(POSES.relaxed), Right: clonePose(POSES.relaxed) };
   private readonly scratch: Record<Hand, HandPose> = { Left: clonePose(POSES.relaxed), Right: clonePose(POSES.relaxed) };
@@ -73,15 +76,23 @@ export class Actor {
   private lastWall = 0;
   private dt = 1 / 60;
   private snap = true;
+  private nextBlink = 0;
+  private blinkStart = -10;
+  private nextSaccade = 0;
+  private readonly saccade = new Vector3();
+  /** debug override: force the eyelids (0 open .. 1 closed) */
+  debugBlink: number | null = null;
+  /** debug: raw face-bone offsets applied after the face animation */
+  debugFace: { key: string; pitch?: number; yaw?: number; roll?: number; x?: number; y?: number; z?: number }[] = [];
   /** camera distance, used for level of detail */
   distance = 10;
 
-  constructor(musician: Musician | null, pos: Vector3, yaw: number, kind: ActorKind, seatKind: 'chair' | 'stool' | 'standing') {
+  constructor(musician: Musician | null, pos: Vector3, yaw: number, kind: ActorKind, seatKind: 'chair' | 'stool' | 'standing', variant?: number) {
     this.musician = musician;
     this.kind = kind;
     this.seed = musician?.seed ?? 0.5;
     const section = musician?.section ?? 'conductor';
-    this.char = createCharacter(this.seed, section, kind === 'conductor');
+    this.char = createCharacter(this.seed, section, kind === 'conductor', variant);
     this.rig = this.char.rig;
     this.root = this.char.root;
     this.root.position.copy(pos);
@@ -186,6 +197,97 @@ export class Actor {
         this.conductor(f, t);
         break;
     }
+    if (this.rig.hasFace() && this.distance < 14) this.face(f);
+  }
+
+  // ------------------------------------------------------------------ face
+
+  /** Where the musician is looking: their part on the stand, or the conductor when glancing up. */
+  private gazeTarget(f: FrameState, out: Vector3): Vector3 {
+    const m = this.musician;
+    if (this.kind === 'conductor') {
+      // scan the orchestra, turning to cued sections
+      return this.rp(noise1(f.wall * 0.12 + 3) * 4 + this.s.cueYaw * this.s.cue * 3, 1.3, 6, out);
+    }
+    const conductorHead = _c.set(0, 1.95, 0.4);
+    const desk = m?.seat.desk;
+    const stand = desk ? out.set(desk.x, m!.seat.y + (this.standing ? 1.25 : 1.0), desk.z) : this.rp(0, this.seatTop + 0.55, 0.7, out);
+    return stand.lerp(conductorHead, this.s.glance);
+  }
+
+  private face(f: FrameState) {
+    const rig = this.rig;
+    const wall = f.wall;
+    // --- blinking: every 2–6 s, faster when playing hard, one extra on a glance change
+    if (wall >= this.nextBlink) {
+      this.blinkStart = wall;
+      const r = noise1(wall * 3.1 + this.seed * 97) * 0.5 + 0.5;
+      this.nextBlink = wall + 1.6 + r * 4.2 - this.s.loud * 0.8;
+    }
+    const since = wall - this.blinkStart;
+    const blinkCurve = since < 0.07 ? since / 0.07 : since < 0.2 ? 1 - (since - 0.07) / 0.13 : 0;
+
+    // --- gaze with micro-saccades
+    const target = this.gazeTarget(f, V());
+    if (wall >= this.nextSaccade) {
+      const r1 = noise1(wall * 7.3 + this.seed * 11);
+      const r2 = noise1(wall * 5.1 + this.seed * 23);
+      this.saccade.set(r1 * 0.08, r2 * 0.05, 0);
+      this.nextSaccade = wall + 0.35 + (noise1(wall * 2.3 + this.seed) * 0.5 + 0.5) * 1.1;
+    }
+    target.add(_d.copy(this.saccade).applyQuaternion(this.root.quaternion));
+    // how far down the eyes look (reading) relative to the head
+    const head = rig.pos('Head', _e);
+    const down = clamp01((head.y - target.y) / Math.max(0.3, head.distanceTo(target)) * 1.4);
+
+    // --- eyelids: upper lid follows the gaze down, plus blinks
+    // (the Biped lid bones are driven by translation: ~12 mm down closes the eye)
+    const blink = this.debugBlink ?? Math.max(blinkCurve, 0);
+    const sc = this.scale;
+    const lidTop = (0.0012 + down * 0.0042 + blink * (0.0112 - down * 0.0042)) * sc;
+    const lidBot = (blink * 0.0014 - down * 0.0006) * sc;
+    rig.nudgeFace('lidTopL', 0, -lidTop, 0);
+    rig.nudgeFace('lidTopR', 0, -lidTop, 0);
+    rig.nudgeFace('lidBotL', 0, lidBot, 0);
+    rig.nudgeFace('lidBotR', 0, lidBot, 0);
+
+    // --- brows: lift with crescendos and big dynamics, knit slightly in concentration
+    const expressive = this.s.trend * 1.2 + (this.s.loud - 0.5) * 0.35;
+    this.s.brow = this.sm(this.s.brow, expressive, 4);
+    const concentrate = 0.3 + 0.3 * noise1(f.wall * 0.2 + this.seed * 5);
+    const lift = this.s.brow * 0.006;
+    const knit = concentrate * 0.0022;
+    rig.nudgeFace('browInL', -knit, lift + 0.001, 0);
+    rig.nudgeFace('browInR', knit, lift + 0.001, 0);
+    rig.nudgeFace('browOutL', 0, lift * 0.6, 0);
+    rig.nudgeFace('browOutR', 0, lift * 0.6, 0);
+    rig.nudgeFace('browMid', 0, lift * 0.8 - knit * 0.5, 0);
+
+    // --- mouth: winds form an embouchure, brass firm the corners; strings breathe with the phrase
+    const family = this.musician ? SECTIONS[this.musician.section].family : 'strings';
+    const blowing = (family === 'woodwinds' || family === 'brass') && this.notes.length > 0 && this.s.raise > 0.6;
+    // lips stay sealed around a mouthpiece; the flute needs only a small aperture; breaths open the mouth
+    const breathOpen = this.s.inhale * (family === 'woodwinds' || family === 'brass' ? 0.06 : 0.03);
+    const jawTarget = blowing ? (family === 'brass' ? 0.012 : this.kind === 'flute' || this.kind === 'piccolo' ? 0.01 : 0.03) : 0.005 + breathOpen + (this.kind === 'conductor' ? this.s.loud * 0.06 : 0);
+    this.s.jaw = this.sm(this.s.jaw, jawTarget, 10);
+    rig.rotateFace('jaw', this.s.jaw);
+    if (blowing) {
+      const firm = family === 'brass' ? 0.0035 : this.kind === 'flute' || this.kind === 'piccolo' ? 0.002 : 0.0015;
+      rig.nudgeFace('cornerL', -firm, -firm * 0.3, 0);
+      rig.nudgeFace('cornerR', firm, -firm * 0.3, 0);
+      // lips close onto the mouthpiece / reed (the rest pose has them slightly parted)
+      const seal = family === 'brass' ? 0.0022 : this.kind === 'flute' || this.kind === 'piccolo' ? 0.0016 : 0.0012;
+      rig.nudgeFace('lipUp', 0, -seal, this.kind === 'flute' || this.kind === 'piccolo' ? 0.0012 : 0);
+      rig.nudgeFace('lipLow', 0, seal * 0.8, 0);
+    }
+
+    for (const d of this.debugFace) {
+      rig.rotateFace(d.key as never, d.pitch ?? 0, d.yaw ?? 0, d.roll ?? 0);
+      if (d.x || d.y || d.z) rig.nudgeFace(d.key as never, d.x ?? 0, d.y ?? 0, d.z ?? 0);
+    }
+    // --- eyes last (needs current world matrices of the head)
+    rig.bones.Head?.updateMatrixWorld(true);
+    rig.aimEyes(target, 1, 0.42);
   }
 
   // ------------------------------------------------------------------ helpers
@@ -294,9 +396,23 @@ export class Actor {
     T.syncQ();
   }
 
+  /** Centre of the lips (from the face rig's lip bones when present). */
   private mouth(out: Vector3): Vector3 {
+    const f = this.rig.face;
+    if (f.lipUp && f.lipLow) {
+      f.lipUp.getWorldPosition(out);
+      out.add(f.lipLow.getWorldPosition(_e)).multiplyScalar(0.5);
+      return out.addScaledVector(this.torso.z, 0.006 * this.scale);
+    }
     const head = this.rig.pos('Head', out);
     return head.addScaledVector(this.torso.y, 0.02 * this.scale).addScaledVector(this.torso.z, 0.105 * this.scale);
+  }
+
+  /** Lower lip (flute embouchure rests just below it). */
+  private lowerLip(out: Vector3): Vector3 {
+    const low = this.rig.face.lipLow;
+    if (low) return low.getWorldPosition(out).addScaledVector(this.torso.z, 0.004 * this.scale);
+    return this.mouth(out).addScaledVector(this.torso.y, -0.012);
   }
 
   /** Places an instrument (or held object) so that local point `anchor` lands on `target` with rotation q. */
@@ -600,7 +716,8 @@ export class Actor {
         const b = new Basis().fromZY(T.dir(-0.94, -0.16 + bellUp * 0.3, 0.3, V()), T.dir(0, 1, 0.05, V()));
         _q.setFromAxisAngle(b.z, -0.25);
         qPlay = b.q.clone().premultiply(_q);
-        playPos = mouth.addScaledVector(T.y, -0.03).addScaledVector(T.z, 0.006);
+        // lip plate under the lower lip, embouchure hole just below the lip line
+        playPos = this.lowerLip(V()).addScaledVector(T.y, -0.009).addScaledVector(T.z, 0.002);
         qRest = new Basis().fromZY(this.rd(-1, 0, 0.15, V()), this.rd(0, 1, 0, V())).q.clone();
         restPos = this.rp(0.24 * s, this.seatTop + 0.17, 0.3, V());
         break;
@@ -681,8 +798,8 @@ export class Actor {
       } else {
         const keys = keysFor(section, pitch);
         for (let i = 0; i < 3; i++) {
-          if (keys[i]) blendFinger(poseL, FINGERS_ORDER[i], POSES.keysPressed, 1);
-          if (keys[i + 3]) blendFinger(poseR, FINGERS_ORDER[i], POSES.keysPressed, 1);
+          if (keys[i]) blendFinger(poseL, FINGERS_ORDER[i], POSES[gL?.pressed ?? 'keysPressed'], 1);
+          if (keys[i + 3]) blendFinger(poseR, FINGERS_ORDER[i], POSES[gR?.pressed ?? 'keysPressed'], 1);
         }
       }
     }

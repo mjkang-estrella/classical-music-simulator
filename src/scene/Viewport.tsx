@@ -1,7 +1,11 @@
 import { CameraControls } from '@react-three/drei';
+import { BrightnessContrast, DepthOfField, EffectComposer, HueSaturation, N8AO, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { Exposure } from './exposure';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, Color, Fog, Group, Mesh, MeshBasicMaterial, PMREMGenerator, RingGeometry, SpotLight, SRGBColorSpace, Vector3 } from 'three';
+import { Color, EquirectangularReflectionMapping, Fog, Group, Mesh, MeshBasicMaterial, NoToneMapping, PMREMGenerator, RingGeometry, SpotLight, SRGBColorSpace, Vector3 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { transport } from '../audio/transport';
 import { buildStage } from '../assets/props';
@@ -18,8 +22,8 @@ export function Viewport() {
       camera={{ position: [0, 4.2, 14], fov: 38, near: 0.05, far: 220 }}
       gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
       onCreated={({ gl, scene }) => {
-        gl.toneMapping = ACESFilmicToneMapping;
-        gl.toneMappingExposure = 0.92;
+        // tone mapping happens in the post-processing chain (AgX)
+        gl.toneMapping = NoToneMapping;
         gl.outputColorSpace = SRGBColorSpace;
         scene.background = new Color('#0b0908');
         scene.fog = new Fog('#0b0908', 32, 75);
@@ -33,6 +37,7 @@ export function Viewport() {
       <Rings />
       <CameraRig />
       <Picking />
+      <Post />
     </Canvas>
   );
 }
@@ -41,15 +46,59 @@ function Environment() {
   const { gl, scene } = useThree();
   useEffect(() => {
     const pmrem = new PMREMGenerator(gl);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    // start with a procedural room so reflections exist immediately, then swap in the real hall
+    let env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = env;
-    scene.environmentIntensity = 0.22;
+    scene.environmentIntensity = 0.28;
+    let disposed = false;
+    new HDRLoader().load(`${import.meta.env.BASE_URL}assets/env/music_hall_01_1k.hdr`, (hdr) => {
+      if (disposed) return;
+      hdr.mapping = EquirectangularReflectionMapping;
+      const next = pmrem.fromEquirectangular(hdr).texture;
+      hdr.dispose();
+      env.dispose();
+      env = next;
+      scene.environment = env;
+      scene.environmentIntensity = 0.45;
+    });
     return () => {
+      disposed = true;
       env.dispose();
       pmrem.dispose();
     };
   }, [gl, scene]);
   return null;
+}
+
+/** Post-processing: ambient occlusion, depth of field on the followed musician, AgX tone mapping. */
+function Post() {
+  const dof = useRef<DepthOfFieldEffect>(null);
+  const focus = useMemo(() => new Vector3(), []);
+  const blur = useRef(0);
+  useFrame((_, dt) => {
+    const e = dof.current;
+    if (!e) return;
+    const { selectedId, follow } = useApp.getState();
+    const actor = follow ? orchestra.actorById(selectedId) : null;
+    const target = actor ? 1 : 0;
+    blur.current += (target - blur.current) * (1 - Math.exp(-4 * dt));
+    if (actor) {
+      actor.headWorld(focus);
+      e.target = focus;
+    }
+    e.bokehScale = blur.current * 2.6;
+  });
+  return (
+    <EffectComposer multisampling={4}>
+      <N8AO aoRadius={0.45} distanceFalloff={0.5} intensity={2.2} quality="medium" halfRes />
+      <DepthOfField ref={dof} worldFocusRange={1.4} bokehScale={0} />
+      <Vignette offset={0.32} darkness={0.55} />
+      <Exposure exposure={0.58} />
+      <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+      <HueSaturation saturation={-0.1} />
+      <BrightnessContrast contrast={0.06} />
+    </EffectComposer>
+  );
 }
 
 function Lights() {
@@ -62,22 +111,23 @@ function Lights() {
       g.add(l, l.target);
       return l;
     };
-    spot([-9, 12, 7], [-3.5, 0, -3], 300, '#ffdcb0', 0.5);
-    spot([9, 12, 7], [3.5, 0, -3], 300, '#ffe2bd', 0.5);
-    spot([0, 13, 3], [0, 0, -7.5], 300, '#fff0da', 0.6);
+    spot([-9, 12, 7], [-3.5, 0, -3], 300, '#ffeedd', 0.5);
+    spot([9, 12, 7], [3.5, 0, -3], 300, '#fff0e2', 0.5);
+    spot([0, 13, 3], [0, 0, -7.5], 300, '#fff4ea', 0.6);
     return g;
   }, []);
   return (
     <>
-      <hemisphereLight args={['#ffe6c7', '#1a120c', 0.22]} />
+      <hemisphereLight args={['#fff1e4', '#1a120c', 0.2]} />
       <ambientLight intensity={0.06} />
       {/* key light from above the audience */}
       <directionalLight
         position={[4, 14, 12]}
         intensity={1.25}
-        color="#ffe2b8"
+        color="#fff0e0"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[4096, 4096]}
+        shadow-radius={4}
         shadow-camera-left={-15}
         shadow-camera-right={15}
         shadow-camera-top={14}
@@ -89,7 +139,7 @@ function Lights() {
       />
       <primitive object={group} />
       {/* back wall glow */}
-      <pointLight position={[0, 6, -11]} intensity={35} distance={20} color="#ffb070" />
+      <pointLight position={[0, 6, -11]} intensity={30} distance={20} color="#ffc08a" />
     </>
   );
 }
