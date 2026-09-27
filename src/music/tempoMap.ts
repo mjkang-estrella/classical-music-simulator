@@ -11,8 +11,10 @@ export function conductedPattern(numerator: number, denominator: number, beatSec
   // compound meters are conducted in dotted beats
   if (denominator === 8 && numerator % 3 === 0 && numerator >= 6) return { beats: numerator / 3, group: 3 };
   if (numerator === 3 && denominator === 8) return { beats: 1, group: 3 };
-  // very fast simple meters are conducted "in one"
-  if ((numerator === 2 || numerator === 3) && beatSeconds < 0.24) return { beats: 1, group: numerator };
+  // fast simple meters are conducted in fewer, larger beats ("in one" / "in two")
+  if (numerator === 2 && beatSeconds < 0.3) return { beats: 1, group: 2 };
+  if (numerator === 3 && beatSeconds < 0.3) return { beats: 1, group: 3 };
+  if (numerator === 4 && beatSeconds < 0.42) return { beats: 2, group: 2 };
   if (numerator > 6) return { beats: numerator % 2 === 0 ? 4 : 3, group: numerator / (numerator % 2 === 0 ? 4 : 3) };
   return { beats: numerator, group: 1 };
 }

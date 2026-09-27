@@ -1,5 +1,6 @@
 import { Bone, Matrix4, Object3D, Quaternion, Vector3 } from 'three';
 import { canonicalName, FINGERS, type CanonBone, type Finger, type Side } from './boneMaps';
+import type { HandPose } from './handPose';
 
 const _m = new Matrix4();
 const _q = new Quaternion();
@@ -45,17 +46,22 @@ interface Limb {
 
 interface HandInfo {
   bone: Bone;
+  forearm: Bone;
   r0: Quaternion;
+  /** hand world rotation relative to the forearm in bind pose (a "straight wrist") */
+  relBind: Quaternion;
   /** wrist → knuckles distance */
   palm: number;
 }
 
 interface FingerChain {
   bones: Bone[];
-  /** curl axis expressed in each bone's local frame */
-  axes: Vector3[];
-  /** spread axis (towards thumb side) in the first bone's local frame */
+  /** per-bone local axis: +angle curls toward the palm */
+  flex: Vector3[];
+  /** first-bone local axis: +angle fans toward the little-finger side */
   spread: Vector3;
+  /** thumb only — per-bone local axis: +angle moves across the palm toward the little finger */
+  across: Vector3[];
 }
 
 interface AxisSet {
@@ -169,11 +175,12 @@ export class Rig {
 
     const hand = (side: Side): HandInfo => {
       const bone = b[`${side}Hand`]!;
+      const forearm = b[`${side}ForeArm`]!;
       const wrist = p(bone);
       const mid = b[`${side}HandMiddle1`];
       const idx = b[`${side}HandIndex1`];
       const pinky = b[`${side}HandPinky1`];
-      const fore = p(b[`${side}ForeArm`]);
+      const fore = p(forearm);
       const dir = mid ? p(mid).sub(wrist) : wrist.clone().sub(fore);
       const palmLen = mid ? dir.length() : 0.09;
       dir.normalize();
@@ -186,7 +193,8 @@ export class Rig {
       }
       palm.normalize();
       const r0 = frameQuat(dir, palm, new Quaternion()).invert().multiply(worldQuat(bone, new Quaternion()));
-      return { bone, r0, palm: palmLen };
+      const relBind = worldQuat(forearm, new Quaternion()).invert().multiply(worldQuat(bone, new Quaternion()));
+      return { bone, forearm, r0, relBind, palm: palmLen };
     };
     this.hands = { Left: hand('Left'), Right: hand('Right') };
 
@@ -195,28 +203,32 @@ export class Rig {
       const handBone = b[`${side}Hand`]!;
       const hq = worldQuat(handBone, new Quaternion());
       const handFrame = this.hands[side];
-      // palm normal & hand direction in world at bind
+      // palm normal, hand direction and the little-finger side, in world space at bind
       const bindFrame = hq.clone().multiply(handFrame.r0.clone().invert());
       const palmN = new Vector3(0, 1, 0).applyQuaternion(bindFrame);
       const handDir = new Vector3(1, 0, 0).applyQuaternion(bindFrame);
+      const idx1 = b[`${side}HandIndex1`];
+      const pinky1 = b[`${side}HandPinky1`];
+      const pinkySide = idx1 && pinky1 ? p(pinky1).sub(p(idx1)).normalize() : new Vector3().crossVectors(palmN, handDir).normalize();
+      pinkySide.addScaledVector(handDir, -pinkySide.dot(handDir)).normalize();
       for (const f of FINGERS) {
         const bones = [1, 2, 3].map((i) => b[`${side}Hand${f}${i}` as CanonBone]).filter(Boolean) as Bone[];
         if (!bones.length) continue;
-        const axes = bones.map((bone, i) => {
+        const segs: Vector3[] = [];
+        bones.forEach((bone, i) => {
           const start = p(bone);
-          const next = bones[i + 1] ? p(bones[i + 1]) : (bone.children[0] as Bone | undefined) ? p(bone.children[0] as Bone) : start.clone().add(handDir.clone().multiplyScalar(0.02));
-          const segDir = next.clone().sub(start);
-          if (segDir.lengthSq() < 1e-8) segDir.copy(handDir);
-          segDir.normalize();
-          // thumb curls across the palm, the others towards it
-          const bend = f === 'Thumb' ? palmN.clone().add(handDir.clone().multiplyScalar(0.3)).normalize() : palmN;
-          const axisWorld = new Vector3().crossVectors(segDir, bend).normalize();
-          const bq = worldQuat(bone, new Quaternion()).invert();
-          return axisWorld.applyQuaternion(bq);
+          const child = bones[i + 1] ?? (bone.children.find((c) => (c as Bone).isBone) as Bone | undefined);
+          let seg = child ? p(child).sub(start) : segs[i - 1]?.clone() ?? (f === 'Thumb' ? p(bone).sub(p(handBone)) : handDir.clone());
+          if (seg.lengthSq() < 1e-8) seg = handDir.clone();
+          segs.push(seg.normalize());
         });
-        const spreadWorld = palmN.clone();
-        const spread = spreadWorld.applyQuaternion(worldQuat(bones[0], new Quaternion()).invert()).normalize();
-        out[f] = { bones, axes, spread };
+        const toLocal = (v: Vector3, bone: Bone) => v.clone().applyQuaternion(worldQuat(bone, new Quaternion()).invert()).normalize();
+        const flex = bones.map((bone, i) => toLocal(new Vector3().crossVectors(segs[i], palmN), bone));
+        const across = bones.map((bone, i) => toLocal(new Vector3().crossVectors(segs[i], pinkySide), bone));
+        // spread axis: palm normal, signed so that +angle moves the finger toward the little-finger side
+        const spreadW = palmN.clone();
+        if (new Vector3().crossVectors(spreadW, segs[0]).dot(pinkySide) < 0) spreadW.negate();
+        out[f] = { bones, flex, spread: toLocal(spreadW, bones[0]), across };
       }
       return out;
     };
@@ -310,12 +322,72 @@ export class Rig {
     return dist > 0 ? d / dist : 1;
   }
 
-  /** Orients a hand: `dir` = wrist→knuckles, `palm` = out of the palm. */
-  orientHand(side: Side, dir: Vector3, palm: Vector3): void {
+  /**
+   * Orients a hand: `dir` = wrist→knuckles, `palm` = out of the palm.
+   * Part of the rotation about the forearm axis is taken by the forearm itself (pronation /
+   * supination), like a real arm, and the remaining wrist bend is limited to `maxWrist` radians.
+   */
+  orientHand(side: Side, dir: Vector3, palm: Vector3, twistShare = 0.6, maxWrist = 1.2): void {
     const h = this.hands[side];
-    const q = frameQuat(dir, palm, _qa).multiply(h.r0);
-    this.setWorldQuat(h.bone, q);
+    const target = frameQuat(dir, palm, _qa).multiply(h.r0);
+    const qFore = worldQuat(h.forearm, _qf);
+    const neutral = _qn.copy(qFore).multiply(h.relBind);
+    const delta = _qd.copy(target).multiply(_qi.copy(neutral).invert());
+    const axis = worldPos(h.bone, _v).sub(worldPos(h.forearm, _v2)).normalize();
+    twistAbout(delta, axis, _qt);
+    const share = _qs.identity().slerp(_qt, twistShare);
+    this.setWorldQuat(h.forearm, _qx.copy(share).multiply(qFore));
+    h.forearm.updateMatrixWorld(true);
+    // limit the remaining wrist deviation
+    worldQuat(h.forearm, _qf);
+    _qn.copy(_qf).multiply(h.relBind);
+    const rel = _qr.copy(_qn).invert().multiply(target);
+    if (rel.w < 0) rel.set(-rel.x, -rel.y, -rel.z, -rel.w);
+    const angle = 2 * Math.acos(Math.min(1, rel.w));
+    if (angle > maxWrist) {
+      rel.copy(_qs.identity().slerp(rel, maxWrist / angle));
+      target.copy(_qn).multiply(rel);
+    }
+    this.setWorldQuat(h.bone, target);
     h.bone.updateMatrixWorld(true);
+  }
+
+  /** Raises (elev) and brings forward (prot) a shoulder girdle, in radians. Updates the arm. */
+  shrug(side: Side, elev: number, prot: number): void {
+    const name = side === 'Left' ? 'LeftShoulder' : 'RightShoulder';
+    const bone = this.bones[name];
+    if (!bone) return;
+    const sgn = side === 'Left' ? 1 : -1;
+    this.rotate(name, 0, -sgn * prot, sgn * elev);
+    bone.updateMatrixWorld(true);
+  }
+
+  /** Applies a full hand pose (finger joints, spread, thumb) on top of the bind pose. */
+  applyHandPose(side: Side, pose: HandPose, weight = 1): void {
+    const fingers = this.fingers[side];
+    const apply = (chain: FingerChain | undefined, a: readonly number[]) => {
+      if (!chain) return;
+      for (let i = 0; i < chain.bones.length && i < 3; i++) chain.bones[i].quaternion.multiply(_q2.setFromAxisAngle(chain.flex[i], a[i] * weight));
+      if (a[3]) chain.bones[0].quaternion.multiply(_q2.setFromAxisAngle(chain.spread, a[3] * weight));
+    };
+    apply(fingers.Index, pose.index);
+    apply(fingers.Middle, pose.middle);
+    apply(fingers.Ring, pose.ring);
+    apply(fingers.Pinky, pose.pinky);
+    const t = fingers.Thumb;
+    if (t) {
+      const [oppose, across, mcp, ip] = pose.thumb;
+      t.bones[0].quaternion.multiply(_q2.setFromAxisAngle(t.flex[0], oppose * weight));
+      t.bones[0].quaternion.multiply(_q2.setFromAxisAngle(t.across[0], across * weight));
+      if (t.bones[1]) {
+        t.bones[1].quaternion.multiply(_q2.setFromAxisAngle(t.across[1], mcp * 0.7 * weight));
+        t.bones[1].quaternion.multiply(_q2.setFromAxisAngle(t.flex[1], mcp * 0.5 * weight));
+      }
+      if (t.bones[2]) {
+        t.bones[2].quaternion.multiply(_q2.setFromAxisAngle(t.across[2], ip * 0.7 * weight));
+        t.bones[2].quaternion.multiply(_q2.setFromAxisAngle(t.flex[2], ip * 0.5 * weight));
+      }
+    }
   }
 
   /** Keeps a foot at its bind orientation relative to the character root. */
@@ -335,7 +407,7 @@ export class Rig {
     const base = finger === 'Thumb' ? 0.55 : 1.25;
     for (let i = 0; i < chain.bones.length; i++) {
       const w = finger === 'Thumb' ? [0.4, 0.5, 0.6][i] : [0.85, 1.1, 0.8][i];
-      chain.bones[i].quaternion.multiply(_q2.setFromAxisAngle(chain.axes[i], amount * base * w));
+      chain.bones[i].quaternion.multiply(_q2.setFromAxisAngle(chain.flex[i], amount * base * w));
     }
     if (spread) chain.bones[0].quaternion.multiply(_q2.setFromAxisAngle(chain.spread, spread));
   }
@@ -354,6 +426,27 @@ export class Rig {
 const _qa = new Quaternion();
 const _qb = new Quaternion();
 const _qp = new Quaternion();
+const _qf = new Quaternion();
+const _qn = new Quaternion();
+const _qd = new Quaternion();
+const _qi = new Quaternion();
+const _qt = new Quaternion();
+const _qs = new Quaternion();
+const _qx = new Quaternion();
+const _qr = new Quaternion();
+
+/** Twist part of `q` about `axis` (swing–twist decomposition). */
+export function twistAbout(q: Quaternion, axis: Vector3, out: Quaternion): Quaternion {
+  const d = q.x * axis.x + q.y * axis.y + q.z * axis.z;
+  out.set(axis.x * d, axis.y * d, axis.z * d, q.w);
+  const len = Math.hypot(out.x, out.y, out.z, out.w);
+  if (len < 1e-8) return out.identity();
+  out.x /= len;
+  out.y /= len;
+  out.z /= len;
+  out.w /= len;
+  return out;
+}
 const _elbow = new Vector3();
 const _end = new Vector3();
 const _d1 = new Vector3();

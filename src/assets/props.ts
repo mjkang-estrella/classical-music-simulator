@@ -214,12 +214,12 @@ export function buildStage(): Group {
   const railMesh = new Mesh(mergeGeometries(rail)!, materials().chrome);
   g.add(railMesh);
   // conductor's score desk
-  const desk = standParts(1.12);
+  const desk = standParts(0.98);
   const deskG = new Group();
   deskG.add(new Mesh(desk.metal, materials().stand), new Mesh(desk.paper, materials().paper));
-  deskG.position.set(0, 0.22, -0.05);
+  deskG.position.set(0, 0.22, -0.02);
   deskG.rotation.y = Math.PI;
-  deskG.scale.set(1.3, 1, 1.1);
+  deskG.scale.set(1.25, 1, 1.1);
   g.add(deskG);
 
   // dark auditorium floor in front of the stage

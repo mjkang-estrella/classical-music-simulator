@@ -2,12 +2,13 @@ import { BufferGeometry, CylinderGeometry, Group, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { anchor, bellProfile, lathe, mesh, rod, torus, tube } from './geometry';
 import type { Materials } from './materials';
+import type { PoseName } from '../../rig/handPose';
 import type { Grip, InstrumentModel } from './types';
 
 const v = (x: number, y: number, z: number) => new Vector3(x, y, z);
 
-function grip(root: Group, name: string, pos: Vector3, dir: Vector3, palm: Vector3, curl: number, thumbCurl = curl): Grip {
-  return { anchor: anchor(name, pos.x, pos.y, pos.z, root), dir: dir.normalize(), palm: palm.normalize(), curl, thumbCurl };
+function grip(root: Group, name: string, pos: Vector3, dir: Vector3, palm: Vector3, pose: PoseName, pressed?: PoseName): Grip {
+  return { anchor: anchor(name, pos.x, pos.y, pos.z, root), dir: dir.normalize(), palm: palm.normalize(), curl: 0.5, pose, pressed };
 }
 
 /**
@@ -52,8 +53,10 @@ export function buildFlute(m: Materials, piccolo = false): InstrumentModel {
     root,
     anchors,
     grips: {
-      L: grip(root, 'grip_L', v(-0.022, -0.028, 0.15 * s), v(0.55, 0.83, -0.05), v(0.9, -0.1, 0.4), 0.42, 0.3),
-      R: grip(root, 'grip_R', v(-0.03, -0.018, 0.39 * s), v(0.35, 0.93, 0.08), v(1, 0.1, -0.15), 0.38, 0.35),
+      // left hand turned back: the flute rests on the index base, fingers come over from the far side
+      L: { ...grip(root, 'grip_L', v(0.022, -0.02, 0.12 * s), v(0.1, 0.98, -0.1), v(-0.95, 0.2, 0.2), 'keys', 'keysPressed'), twist: 0.9, wrist: 1.4 },
+      // right hand: fingers arch over the top from the player's side, thumb underneath
+      R: grip(root, 'grip_R', v(-0.034, -0.016, 0.39 * s), v(0.35, 0.93, 0.06), v(0.95, 0.1, -0.2), 'keys', 'keysPressed'),
     },
   };
 }
@@ -126,8 +129,9 @@ export function buildReed(m: Materials, kind: 'oboe' | 'clarinet'): InstrumentMo
     root,
     anchors,
     grips: {
-      L: grip(root, 'grip_L', v(0.016, -0.004, 0.22), v(-0.35, 0.93, 0.08), v(-1, 0.05, 0), 0.48, 0.3),
-      R: grip(root, 'grip_R', v(-0.016, -0.004, 0.41), v(0.35, 0.93, 0.08), v(1, 0.05, 0), 0.48, 0.3),
+      // each hand wraps from its side: fingers reach round to the tone holes on the front, thumb behind
+      L: grip(root, 'grip_L', v(0.026, -0.008, 0.21), v(-0.28, 0.88, 0.38), v(-1, 0.1, 0), 'keys', 'keysPressed'),
+      R: grip(root, 'grip_R', v(-0.026, -0.008, 0.42), v(0.28, 0.88, 0.38), v(1, 0.1, 0), 'keys', 'keysPressed'),
     },
   };
 }
@@ -170,8 +174,8 @@ export function buildBassoon(m: Materials): InstrumentModel {
     root,
     anchors: { mouthpiece: anchor('mouthpiece', 0, 0, 0.0, root) },
     grips: {
-      L: grip(root, 'grip_L', v(0.03, W.y + 0.22, W.z - 0.035), v(-0.2, 0.2, 0.96), v(-0.85, 0, 0.1), 0.5, 0.3),
-      R: grip(root, 'grip_R', v(-0.04, bottom + 0.3, W.z - 0.03), v(0.25, 0.25, 0.94), v(0.85, 0, 0.1), 0.5, 0.3),
+      L: grip(root, 'grip_L', v(0.034, W.y + 0.22, W.z - 0.03), v(-0.25, 0.25, 0.94), v(-0.9, 0, 0.15), 'keys', 'keysPressed'),
+      R: grip(root, 'grip_R', v(-0.045, bottom + 0.3, W.z - 0.03), v(0.3, 0.3, 0.9), v(0.9, 0, 0.15), 'keys', 'keysPressed'),
     },
   };
 }
@@ -212,8 +216,9 @@ export function buildTrumpet(m: Materials): InstrumentModel {
     root,
     anchors: { mouthpiece: anchor('mouthpiece', 0, 0, 0, root) },
     grips: {
-      L: grip(root, 'grip_L', v(0.026, -0.01, 0.215), v(-0.35, -0.1, 0.93), v(-0.95, 0.1, 0), 0.62, 0.4),
-      R: grip(root, 'grip_R', v(-0.005, 0.078, 0.175), v(0, -0.25, 0.97), v(0.05, -1, 0.1), 0.45, 0.3),
+      // left hand wraps the valve casings, right fingertips sit on the valve caps
+      L: grip(root, 'grip_L', v(0.03, -0.012, 0.212), v(0.05, 0.35, 0.94), v(-1, 0.05, 0), 'wrap'),
+      R: grip(root, 'grip_R', v(-0.004, 0.082, 0.17), v(0, -0.28, 0.96), v(0.05, -1, 0.1), 'valves', 'valvesPressed'),
     },
   };
 }
@@ -260,8 +265,9 @@ export function buildHorn(m: Materials): InstrumentModel {
     root,
     anchors: { mouthpiece: anchor('mouthpiece', 0, 0, 0, root), bell: anchor('bell', bellMouth.x, bellMouth.y, bellMouth.z, root) },
     grips: {
-      L: grip(root, 'grip_L', v(C.x + 0.15, C.y + 0.02, C.z - 0.06), v(-0.3, -0.3, 0.9), v(-0.8, 0.1, -0.2), 0.55, 0.3),
-      R: grip(root, 'grip_R', bellMouth.clone().addScaledVector(axis, -0.02).add(v(0.02, 0.05, 0)), axis.clone().negate(), v(-0.3, -1, 0.2), 0.2, 0.1),
+      L: grip(root, 'grip_L', v(C.x + 0.15, C.y + 0.03, C.z - 0.06), v(-0.35, -0.2, 0.9), v(-0.6, -0.75, -0.1), 'valves', 'valvesPressed'),
+      // right hand cupped inside the bell
+      R: grip(root, 'grip_R', bellMouth.clone().addScaledVector(axis, -0.02).add(v(0.02, 0.05, 0)), axis.clone().negate(), v(-0.3, -1, 0.2), 'relaxed'),
     },
   };
 }
@@ -299,13 +305,13 @@ export function buildTrombone(m: Materials): InstrumentModel {
   mesh(bend, m.brass, slide);
   mesh(rod(v(0, 0, 0.63), v(0, low, 0.63), 0.0045, 0.0045, 6), m.brass, slide);
   root.add(slide);
-  const gripR = grip(slide as Group, 'grip_R', v(-0.012, low / 2, 0.64), v(0, 0.2, 0.98), v(1, 0, 0), 0.55, 0.35);
+  const gripR = grip(slide as Group, 'grip_R', v(-0.014, low / 2, 0.635), v(0, 0.3, 0.95), v(1, 0, 0), 'stick');
   return {
     kind: 'trombone',
     root,
     anchors: { mouthpiece: anchor('mouthpiece', 0, 0, 0, root) },
     grips: {
-      L: grip(root, 'grip_L', v(0.045, -0.03, 0.12), v(-0.1, 0.95, 0.1), v(-0.95, 0, 0.1), 0.6, 0.3),
+      L: grip(root, 'grip_L', v(0.045, -0.03, 0.12), v(-0.1, 0.95, 0.1), v(-0.95, 0, 0.1), 'wrap'),
       R: gripR,
     },
     slide,
@@ -352,8 +358,8 @@ export function buildTuba(m: Materials): InstrumentModel {
     root,
     anchors: { mouthpiece: anchor('mouthpiece', 0, 0, 0, root) },
     grips: {
-      L: grip(root, 'grip_L', v(bx + 0.14, -0.2, bz - 0.02), v(-0.2, 0.5, 0.84), v(-0.9, 0, -0.2), 0.55, 0.3),
-      R: grip(root, 'grip_R', v(-0.1, -0.11, bz - 0.06), v(0, -0.2, 0.98), v(0, -1, 0), 0.45, 0.3),
+      L: grip(root, 'grip_L', v(bx + 0.14, -0.2, bz - 0.02), v(-0.2, 0.5, 0.84), v(-0.9, 0, -0.2), 'wrap'),
+      R: grip(root, 'grip_R', v(-0.1, -0.1, bz - 0.07), v(0, -0.25, 0.97), v(0, -1, 0), 'valves', 'valvesPressed'),
     },
   };
 }

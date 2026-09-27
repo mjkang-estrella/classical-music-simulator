@@ -20,6 +20,13 @@ export interface FrameState {
   camera: Vector3;
   /** time of the first note in the piece */
   firstNote: number;
+  /** current conducted beat: index into beats (-1 before the first), phase 0..1 within it */
+  beatIndex: number;
+  beatPhase: number;
+  /** seconds since the most recent downbeat (Infinity if none) */
+  sinceDownbeat: number;
+  /** true when song time jumped (seek / load): smoothed values should snap */
+  jumped: boolean;
 }
 
 /** Orthonormal frame helper (origin + axes). */

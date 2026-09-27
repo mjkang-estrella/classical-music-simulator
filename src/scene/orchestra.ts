@@ -45,6 +45,10 @@ export class Orchestra {
     beats: [],
     camera: new Vector3(),
     firstNote: 0,
+    beatIndex: -1,
+    beatPhase: 0,
+    sinceDownbeat: Infinity,
+    jumped: true,
   };
   private highlight: SectionId | null = null;
   private dimAmount = 0;
@@ -117,7 +121,23 @@ export class Orchestra {
   private updateInner(t: number, wall: number, playing: boolean, camera: Camera, selectedId: string | null) {
     const f = this.frame;
     f.dt = wall - f.wall;
+    f.jumped = Math.abs(t - f.t) > 0.3 + Math.max(0, f.dt) * 2;
     f.t = t;
+    // beat bookkeeping (shared by every performer)
+    const beats = f.beats;
+    let lo = 0;
+    let hi = beats.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (beats[mid].time <= t) lo = mid + 1;
+      else hi = mid;
+    }
+    f.beatIndex = lo - 1;
+    const b = beats[f.beatIndex];
+    f.beatPhase = b ? Math.min(1, (t - b.time) / Math.max(0.05, b.duration)) : 0;
+    let db = f.beatIndex;
+    while (db >= 0 && beats[db].beatInBar !== 0) db--;
+    f.sinceDownbeat = db >= 0 ? t - beats[db].time : Infinity;
     f.wall = wall;
     f.playing = playing;
     f.camera.copy(camera.position);
@@ -176,6 +196,11 @@ export class Orchestra {
     const colliders = this.allActors.map((a) => a.collider);
     const hits = this.raycaster.intersectObjects(colliders, false);
     return (hits[0]?.object.userData.actor as Actor | undefined) ?? null;
+  }
+
+  /** debug: show / hide chairs and music stands */
+  setStandsVisible(v: boolean) {
+    if (this.props) this.props.visible = v;
   }
 
   setHighlight(section: SectionId | null) {

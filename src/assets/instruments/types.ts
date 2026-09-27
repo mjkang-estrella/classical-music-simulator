@@ -1,5 +1,6 @@
 import type { Group, Object3D, Vector3 } from 'three';
 import type { InstrumentKind } from '../../orchestra/sections';
+import type { PoseName } from '../../rig/handPose';
 
 /** How a hand holds something: palm centre, finger direction and palm normal, all in the holder's local frame. */
 export interface Grip {
@@ -10,6 +11,14 @@ export interface Grip {
   curl: number;
   thumbCurl?: number;
   spread?: number;
+  /** hand pose while holding / idle */
+  pose?: PoseName;
+  /** hand pose with fingers pressed (keys, valves) */
+  pressed?: PoseName;
+  /** share of the hand's twist taken by the forearm (pronation / supination), default 0.6 */
+  twist?: number;
+  /** maximum remaining wrist deviation in radians, default 1.15 */
+  wrist?: number;
 }
 
 export interface BowedSpec {

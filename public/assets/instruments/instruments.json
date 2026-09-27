@@ -1,0 +1,94 @@
+[
+  {
+    "kind": "violin",
+    "file": "violin.glb",
+    "bow": "violin_bow.glb",
+    "triangles": 11950,
+    "bowTriangles": 1156,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "viola",
+    "file": "viola.glb",
+    "bow": "viola_bow.glb",
+    "triangles": 11834,
+    "bowTriangles": 1156,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "cello",
+    "file": "cello.glb",
+    "bow": "cello_bow.glb",
+    "triangles": 11408,
+    "bowTriangles": 1156,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "bass",
+    "file": "bass.glb",
+    "bow": "bass_bow.glb",
+    "triangles": 11816,
+    "bowTriangles": 1156,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "trumpet",
+    "file": "trumpet.glb",
+    "triangles": 9812,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "horn",
+    "file": "horn.glb",
+    "triangles": 12992,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "trombone",
+    "file": "trombone.glb",
+    "triangles": 6116,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "tuba",
+    "file": "tuba.glb",
+    "triangles": 12208,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "flute",
+    "file": "flute.glb",
+    "triangles": 4204,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "piccolo",
+    "file": "piccolo.glb",
+    "triangles": 3312,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "oboe",
+    "file": "oboe.glb",
+    "triangles": 6764,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "clarinet",
+    "file": "clarinet.glb",
+    "triangles": 6388,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "bassoon",
+    "file": "bassoon.glb",
+    "triangles": 7596,
+    "license": "CC0 (procedurally generated)"
+  },
+  {
+    "kind": "timpani",
+    "file": "timpani.glb",
+    "triangles": 16064,
+    "license": "CC0 (procedurally generated)"
+  }
+]

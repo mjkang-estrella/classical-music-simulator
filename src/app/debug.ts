@@ -35,6 +35,19 @@ const api = {
   },
   audioLevel: () => transport.engine?.level() ?? 0,
   silent: () => transport.silent,
+  /** frame a canonical bone of a musician; offset (ox, oy, oz) is in the musician's root frame */
+  lookAtBone: (id: string, bone: string, ox: number, oy: number, oz: number) => {
+    const a = orchestra.actorById(id);
+    const c = cameraHandle.controls;
+    const b = a?.rig.bones[bone as 'Head'];
+    if (!a || !c || !b) return;
+    useApp.getState().set({ follow: false });
+    const t = b.getWorldPosition(a.root.position.clone());
+    const off = a.root.position.clone().set(ox, oy, oz).applyQuaternion(a.root.quaternion);
+    const p = t.clone().add(off);
+    void c.setLookAt(p.x, p.y, p.z, t.x, t.y, t.z, false);
+  },
+  stands: (v: boolean) => orchestra.setStandsVisible(v),
   perf: () => ({ updateMs: +orchestra.lastUpdateMs.toFixed(2) }),
   /** raw access for debugging in the console */
   orchestra,

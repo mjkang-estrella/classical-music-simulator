@@ -154,7 +154,8 @@ function syncAnchors(src: Object3D, dst: Object3D) {
   src.updateMatrixWorld(true);
   const inv = new Matrix4().copy(src.matrixWorld).invert();
   src.traverse((o) => {
-    if (!o.name.startsWith('anchor_')) return;
+    // grips are hand-placement data owned by the animation code, not instrument geometry
+    if (!o.name.startsWith('anchor_') || o.name.startsWith('anchor_grip') || o.name === 'anchor_left_hand') return;
     const target = dst.getObjectByName(o.name);
     // prototype anchors hang directly off root / slide / floor; nested ones keep their procedural position
     if (!target || target.parent !== dst) return;

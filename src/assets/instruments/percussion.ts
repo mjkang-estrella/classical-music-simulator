@@ -20,11 +20,11 @@ export function buildStick(m: Materials, length: number, head: number, kind: 'fe
 
 function stickGrip(anchorParent: Group): Grip {
   // hand holds the stick with the palm facing down, fingers wrapped around
-  return { anchor: anchor('grip', 0, 0.01, 0.0, anchorParent), dir: v(0.9, -0.1, 0.35).normalize(), palm: v(0, -1, 0), curl: 0.95, thumbCurl: 0.6 };
+  return { anchor: anchor('grip', 0, 0.01, 0.0, anchorParent), dir: v(0.9, -0.1, 0.35).normalize(), palm: v(0, -1, 0), curl: 0.95, thumbCurl: 0.6, pose: 'stick' };
 }
 
 function stickGripR(anchorParent: Group): Grip {
-  return { anchor: anchor('grip', 0, 0.01, 0.0, anchorParent), dir: v(-0.9, -0.1, 0.35).normalize(), palm: v(0, -1, 0), curl: 0.95, thumbCurl: 0.6 };
+  return { anchor: anchor('grip', 0, 0.01, 0.0, anchorParent), dir: v(-0.9, -0.1, 0.35).normalize(), palm: v(0, -1, 0), curl: 0.95, thumbCurl: 0.6, pose: 'stick' };
 }
 
 /**
@@ -163,8 +163,8 @@ export function buildCymbals(m: Materials): InstrumentModel {
     root,
     anchors: {},
     grips: {
-      L: { anchor: anchor('grip', 0, 0, -0.03, L), dir: v(0, 1, 0), palm: v(0, 0, 1), curl: 0.9, thumbCurl: 0.6 },
-      R: { anchor: anchor('grip', 0, 0, -0.03, R), dir: v(0, 1, 0), palm: v(0, 0, 1), curl: 0.9, thumbCurl: 0.6 },
+      L: { anchor: anchor('grip', 0, 0, -0.03, L), dir: v(0, 1, 0), palm: v(0, 0, 1), curl: 0.9, thumbCurl: 0.6, pose: 'wrap' },
+      R: { anchor: anchor('grip', 0, 0, -0.03, R), dir: v(0, 1, 0), palm: v(0, 0, 1), curl: 0.9, thumbCurl: 0.6, pose: 'wrap' },
     },
     held: { L, R },
   };
@@ -251,7 +251,7 @@ export function buildTriangle(m: Materials): InstrumentModel {
     root,
     anchors: {},
     grips: {
-      L: { anchor: anchor('grip', 0, 0.01, 0, L), dir: v(0, 0.3, 1), palm: v(1, 0, 0), curl: 0.7, thumbCurl: 0.9 },
+      L: { anchor: anchor('grip', 0, 0.01, 0, L), dir: v(0, 0.3, 1), palm: v(1, 0, 0), curl: 0.7, thumbCurl: 0.9, pose: 'wrap' },
       R: stickGripR(R),
     },
     held: { L, R },
