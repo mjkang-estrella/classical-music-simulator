@@ -8,3 +8,4 @@ test-results/
 tools/blender/__pycache__
 tools/blender/instruments/__pycache__
 vendor/
+.env*
