@@ -136,7 +136,7 @@ export function buildSeatingProps(seats: Seat[]): Group {
 export function buildStage(): Group {
   const g = new Group();
   g.name = 'stage';
-  const floorMat = new MeshStandardMaterial({ color: '#2e1f15', roughness: 0.38, metalness: 0 });
+  const floorMat = new MeshStandardMaterial({ color: '#2e1f15', roughness: 0.6, metalness: 0 });
   const woodMat = new MeshStandardMaterial({ color: '#4a2d19', roughness: 0.5 });
   const shellMat = new MeshStandardMaterial({ color: '#2a1d14', roughness: 0.8, side: DoubleSide });
   const darkMat = new MeshStandardMaterial({ color: '#0b0908', roughness: 1 });

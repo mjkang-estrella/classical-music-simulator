@@ -150,6 +150,9 @@ function Lights() {
     spot([-9, 12, 7], [-3.5, 0, -3], 300, '#ffeedd', 0.5);
     spot([9, 12, 7], [3.5, 0, -3], 300, '#fff0e2', 0.5);
     spot([0, 13, 3], [0, 0, -7.5], 300, '#fff4ea', 0.6);
+    // back / top light from behind the orchestra: rims hair and shoulders as seen from the hall
+    spot([-4, 11, -15], [-2, 1.2, -6], 150, '#ffe6c8', 0.5);
+    spot([4, 11, -15], [2, 1.2, -6], 150, '#ffe6c8', 0.5);
     return g;
   }, []);
   return (
