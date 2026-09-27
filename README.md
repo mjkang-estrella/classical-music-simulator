@@ -80,6 +80,49 @@ MIDI ──► Score (parts, beat grid, loudness) ──► Plans (bowing, raise
   See `tools/blender/README.md`.
 - **Instruments** are modelled procedurally with Blender Python in `tools/blender/instruments/`, plus a validator. Each exported GLB keeps exactly the anchor positions the animation code uses; the contract is `tools/blender/instruments/anchor_contract.json`, regenerated with `DUMP_ANCHORS=1 pnpm test`. The app swaps a realistic mesh in for any instrument listed in `public/assets/instruments/instruments.json`.
 
+## Realism features
+
+- **Characters.** Microsoft Rocketbox avatars are processed by the Blender pipeline in `tools/blender/`:
+  - 2k textures, with roughness maps derived from the specular maps;
+  - a subdivided LOD for close-ups plus 3 lower LODs;
+  - forearm twist bones re-weighted into the skin;
+  - outfits recoloured to concert black.
+- **Shading** (`src/assets/characterMaterials.ts`). The GLB materials are upgraded at load:
+  - **Skin:** a subsurface-scattering approximation (per-channel wrap lighting inside a skin mask), tileable pore detail normals, matte roughness.
+  - **Eyes:** wet, near-mirror eyes found from the live eye-bone positions.
+  - **Hair:** anisotropic highlights and two-pass rendering (a solid core plus sorted soft edges).
+  - **Wool:** a sheen lobe.
+  - **Glasses:** glossy frames.
+  - **Per-musician variation:** each musician gets their own skin tone, hair colour and ±3.5 % height. Avatars are assigned so neighbours never look alike.
+- **Face** (`Actor.face`), using the Rocketbox face rig:
+  - **Eyes:** blinks every 2–6 s and at phrase ends. The eyes make micro-saccades, read the part on the stand and glance up at the conductor, and the upper lids follow the gaze.
+  - **Brows** lift with crescendos.
+  - **Mouth:** wind and brass embouchures (sealed lips, firm corners). Brass players' faces flush in loud passages, and the conductor breathes in on the preparatory beat.
+- **Hands** (`src/rig/handPose.ts`):
+  - per-joint finger poses taken from real grips (bow holds, fingerboard, keys, valves, mallets, baton);
+  - real fingerings (valve combinations, string fingers and positions, woodwind key patterns);
+  - forearm pronation shared with the twist bones, wrist limits, shoulder elevation.
+- **Body.** Players lean into crescendos, nod on downbeats and breathe. Standing players keep their feet planted and shift their weight.
+- **Rendering:**
+  - Poly Haven *Music Hall* HDRI; front, back and rim stage lights;
+  - ambient occlusion and depth of field when following a musician;
+  - Khronos Neutral tone mapping;
+  - adaptive pixel ratio to hold 60 fps.
+
+Debug hooks in the browser console include:
+
+| Hook | What it does |
+|---|---|
+| `__orchestra.lookAtBone(id, bone, x, y, z)` | Frames a bone of a musician |
+| `__orchestra.blink(id, 0…1)` | Forces a musician's eyelids open / closed |
+| `__orchestra.skin(0…1)` | Sets the skin scattering strength |
+| `__orchestra.pores(0…1)` | Sets the pore detail strength |
+| `__orchestra.stands(false)` | Hides chairs and music stands |
+
+Two scripts help check motion and speed:
+- `node tools/motion-sheet.mjs` renders frame-by-frame contact sheets.
+- `node tools/perf.mjs` measures frame rate per camera view. Add `?ao=0&dof=0&msaa=0&post=0` to switch features off.
+
 ## Tests
 
 ```sh
